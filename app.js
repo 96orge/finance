@@ -6,11 +6,15 @@ let state = {
     incomeSources: [],  // Recurring income (salary, NYSC allowance, ...)
     quickAdds: [],      // One-tap transaction templates (transport, data, ...)
     debts: [],          // Money owed / owed to you, paid down incrementally
-    settings: {}        // App-wide preferences (wantsMonthlyCap, ...)
+    goals: [],          // Savings goals / sinking funds
+    investments: { holdings: [], activity: [] }, // Stock/investment portfolio
+    settings: {}        // App-wide preferences (wantsMonthlyCap, usdRate, ...)
 };
 
 const DEFAULT_SETTINGS = {
-    wantsMonthlyCap: null // ₦ ceiling for 'want' spending each month; null = off
+    wantsMonthlyCap: null, // ₦ ceiling for 'want' spending each month; null = off
+    usdRate: null,         // ₦ per US$1 for valuing USD holdings; null = not set
+    activityDays: []       // ISO date strings the user logged something on (streak)
 };
 
 // Chart.js global instances
@@ -30,6 +34,8 @@ const DEFAULT_CATEGORIES = [
     { id: 'cat-healthcare', name: 'Healthcare', type: 'expense', color: '#10b981', icon: 'fa-solid fa-heart-pulse', priority: 'need' },
     { id: 'cat-career', name: 'Career & Certifications', type: 'expense', color: '#0ea5e9', icon: 'fa-solid fa-graduation-cap', priority: 'need' },
     { id: 'cat-debt', name: 'Debt Repayment', type: 'expense', color: '#ef4444', icon: 'fa-solid fa-hand-holding-dollar', priority: 'need' },
+    { id: 'cat-savings', name: 'Savings', type: 'expense', color: '#8b5cf6', icon: 'fa-solid fa-piggy-bank', priority: 'need' },
+    { id: 'cat-invest', name: 'Investing', type: 'expense', color: '#6366f1', icon: 'fa-solid fa-arrow-trend-up', priority: 'need' },
     { id: 'cat-misc', name: 'Miscellaneous', type: 'expense', color: '#64748b', icon: 'fa-solid fa-circle-nodes', priority: 'want' },
     // Income Categories
     { id: 'cat-salary', name: 'Salary', type: 'income', color: '#10b981', icon: 'fa-solid fa-briefcase', priority: 'need' },
@@ -72,7 +78,12 @@ function migrateState() {
     if (!Array.isArray(state.incomeSources)) state.incomeSources = [];
     if (!Array.isArray(state.quickAdds)) state.quickAdds = [];
     if (!Array.isArray(state.debts)) state.debts = [];
+    if (!Array.isArray(state.goals)) state.goals = [];
+    if (!state.investments || typeof state.investments !== 'object') state.investments = { holdings: [], activity: [] };
+    if (!Array.isArray(state.investments.holdings)) state.investments.holdings = [];
+    if (!Array.isArray(state.investments.activity)) state.investments.activity = [];
     state.settings = Object.assign({}, DEFAULT_SETTINGS, state.settings || {});
+    if (!Array.isArray(state.settings.activityDays)) state.settings.activityDays = [];
 
     // Backfill category.priority (need vs want) for pre-existing data.
     state.categories.forEach(cat => {
@@ -85,7 +96,7 @@ function migrateState() {
     });
 
     // Ensure categories the app now depends on exist.
-    ['cat-debt', 'cat-career', 'cat-allowance'].forEach(id => {
+    ['cat-debt', 'cat-career', 'cat-allowance', 'cat-savings', 'cat-invest'].forEach(id => {
         if (!state.categories.some(c => c.id === id)) {
             state.categories.push({ ...CATEGORIES_BY_ID[id] });
         }
@@ -97,6 +108,32 @@ function migrateState() {
         if (!d.status) d.status = 'active';
         if (!d.kind) d.kind = 'iOwe';
     });
+
+    // Normalise goal records.
+    state.goals.forEach(g => {
+        if (!Array.isArray(g.contributions)) g.contributions = [];
+        if (typeof g.savedAmount !== 'number') {
+            g.savedAmount = g.contributions.reduce((s, c) => s + (c.amount || 0), 0);
+        }
+        if (!g.status) g.status = g.savedAmount >= g.targetAmount ? 'reached' : 'active';
+    });
+
+    // Normalise investment holdings.
+    state.investments.holdings.forEach(h => {
+        if (!h.currency) h.currency = 'NGN';
+        if (typeof h.units !== 'number') h.units = 0;
+        if (typeof h.avgCost !== 'number') h.avgCost = 0;
+        if (typeof h.currentPrice !== 'number') h.currentPrice = h.avgCost;
+    });
+}
+
+// Record that the user logged something today (drives the dashboard streak).
+function touchStreak() {
+    const today = todayISO();
+    const days = state.settings.activityDays;
+    if (!days.includes(today)) days.push(today);
+    // keep the list bounded
+    if (days.length > 90) state.settings.activityDays = days.slice(-90);
 }
 
 function saveData() {
@@ -192,8 +229,53 @@ function loadSampleData() {
             payments: [
                 { id: 'pmt-1', amount: 20000, date: getDateOffset(9), note: 'First instalment', txId: null }
             ]
+        },
+        {
+            id: 'debt-lent', name: 'Money lent out', counterparty: 'Emeka', kind: 'owedToMe',
+            originalAmount: 25000, createdDate: getDateOffset(20),
+            dueDate: getDateOffset(2), notes: 'Lent for transport', status: 'active',
+            payments: [
+                { id: 'pmt-l1', amount: 10000, date: getDateOffset(6), note: 'Part payment', txId: null }
+            ]
         }
     ];
+
+    // Savings goals / sinking funds
+    state.goals = [
+        {
+            id: 'goal-aws', name: 'AWS Certification', targetAmount: 150000, savedAmount: 55000,
+            targetDate: new Date(curYear, curMonth + 4, 1).toISOString().split('T')[0],
+            icon: 'fa-solid fa-graduation-cap', color: '#0ea5e9', status: 'active',
+            contributions: [
+                { id: 'gc-1', amount: 30000, date: new Date(curYear, curMonth - 1, 3).toISOString().split('T')[0], note: 'Kickoff', txId: null },
+                { id: 'gc-2', amount: 25000, date: getDateOffset(5), note: '', txId: null }
+            ]
+        },
+        {
+            id: 'goal-emergency', name: 'Emergency Fund', targetAmount: 500000, savedAmount: 120000,
+            targetDate: null, icon: 'fa-solid fa-shield-halved', color: '#10b981', status: 'active',
+            contributions: [
+                { id: 'gc-3', amount: 120000, date: new Date(curYear, curMonth - 2, 15).toISOString().split('T')[0], note: 'Rollover', txId: null }
+            ]
+        }
+    ];
+
+    // Investment portfolio
+    state.investments = {
+        holdings: [
+            { id: 'hold-mtn', name: 'MTN Nigeria', ticker: 'MTNN', currency: 'NGN', account: 'NGX / Bamboo',
+              units: 200, avgCost: 190, currentPrice: 235, notes: '' },
+            { id: 'hold-voo', name: 'Vanguard S&P 500 ETF', ticker: 'VOO', currency: 'USD', account: 'Trove',
+              units: 3, avgCost: 480, currentPrice: 520, notes: 'Long-term hold' }
+        ],
+        activity: [
+            { id: 'ia-1', holdingId: 'hold-mtn', type: 'buy', units: 200, pricePerUnit: 190, amount: 38000, fee: 0, date: new Date(curYear, curMonth - 3, 8).toISOString().split('T')[0], note: 'Initial position', txId: null, realizedPL: 0 },
+            { id: 'ia-2', holdingId: 'hold-mtn', type: 'dividend', units: 0, pricePerUnit: 0, amount: 4200, fee: 0, date: getDateOffset(15), note: 'Interim dividend', txId: 'tx-s3', realizedPL: 0 },
+            { id: 'ia-3', holdingId: 'hold-voo', type: 'buy', units: 3, pricePerUnit: 480, amount: 1440, fee: 0, date: new Date(curYear, curMonth - 2, 20).toISOString().split('T')[0], note: '', txId: null, realizedPL: 0 }
+        ]
+    };
+
+    state.settings.usdRate = 1600;
 }
 
 // --- App Layout Navigation ---
@@ -208,7 +290,9 @@ const TAB_TITLES = {
     transactions: 'Transactions',
     categories: 'Categories & Budgets',
     income: 'Income & Recurring',
-    debts: 'Debts',
+    debts: 'Debts & Lending',
+    goals: 'Goals',
+    investments: 'Investments',
     more: 'More',
     settings: 'Data Management'
 };
@@ -241,6 +325,10 @@ function switchToTab(targetTab) {
         renderIncomeView();
     } else if (targetTab === 'debts') {
         renderDebtsView();
+    } else if (targetTab === 'goals') {
+        renderGoalsView();
+    } else if (targetTab === 'investments') {
+        renderInvestmentsView();
     }
 }
 
@@ -329,13 +417,39 @@ function populateMonthSelector() {
 function updateDashboard() {
     populateMonthSelector();
     updateDashboardStats();
+    renderTodayStrip();
     renderRecurringIncomeWidget();
     renderQuickAddWidget();
     renderNeedsWantsWidget();
     renderDebtWidget();
+    renderGoalsWidget();
+    renderInvestmentsWidget();
     renderRecentTransactions();
     renderDashboardBudgets();
     renderCharts();
+}
+
+// Month income / expense totals for the active dashboard month.
+function monthTotals() {
+    const { year, month } = getActiveMonth();
+    let income = 0, expense = 0;
+    state.transactions.forEach(tx => {
+        const d = new Date(tx.date);
+        if (d.getFullYear() !== year || d.getMonth() !== month) return;
+        if (tx.type === 'income') income += tx.amount;
+        else expense += tx.amount;
+    });
+    return { income, expense };
+}
+
+function monthCategorySpend(catId, year, month) {
+    return state.transactions
+        .filter(tx => tx.type === 'expense' && tx.categoryId === catId)
+        .filter(tx => {
+            const d = new Date(tx.date);
+            return d.getFullYear() === year && d.getMonth() === month;
+        })
+        .reduce((s, tx) => s + tx.amount, 0);
 }
 
 function updateDashboardStats() {
@@ -678,8 +792,10 @@ function renderCharts() {
 // --- Transactions List Filters and Tables Render ---
 function renderTransactionsList() {
     const tbody = document.getElementById('transactions-table-body');
+    const mobileList = document.getElementById('transactions-mobile-list');
     const emptyState = document.getElementById('empty-transactions-state');
     tbody.innerHTML = '';
+    if (mobileList) mobileList.innerHTML = '';
 
     const searchValue = document.getElementById('tx-search').value.toLowerCase();
     const typeValue = document.getElementById('filter-type').value;
@@ -764,6 +880,32 @@ function renderTransactionsList() {
             </td>
         `;
         tbody.appendChild(tr);
+
+        if (mobileList) {
+            const card = document.createElement('div');
+            card.className = 'mobile-tx-card';
+            card.innerHTML = `
+                <div class="mobile-tx-card-row1">
+                    <span class="mobile-tx-card-title">${escapeHtml(tx.title)}</span>
+                    <span class="mobile-tx-card-amount ${amountClass}">${amountSign}${formatNaira(tx.amount)}</span>
+                </div>
+                <div class="mobile-tx-card-row2">
+                    <span class="badge mobile-tx-card-badge" style="background: ${cat.color}15; color: ${cat.color}; border-color: ${cat.color}25">
+                        <i class="${cat.icon}"></i> ${escapeHtml(cat.name)}
+                    </span>
+                    ${priorityTag}
+                </div>
+                ${tx.notes ? `<div class="mobile-tx-card-notes">${escapeHtml(tx.notes)}</div>` : ''}
+                <div class="mobile-tx-card-footer">
+                    <span class="mobile-tx-card-date">${formattedDate}</span>
+                    <span class="mobile-tx-card-actions">
+                        <button class="btn-action btn-action-edit" onclick="editTransaction('${tx.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-action btn-action-delete" onclick="deleteTransaction('${tx.id}')" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+                    </span>
+                </div>
+            `;
+            mobileList.appendChild(card);
+        }
     });
 }
 
@@ -1076,6 +1218,7 @@ document.getElementById('transaction-form').addEventListener('submit', (e) => {
     } else {
         const txId = 'tx-' + Date.now() + Math.random().toString(36).slice(2, 6);
         state.transactions.push({ id: txId, title, type, amount, categoryId, date, notes });
+        touchStreak();
     }
 
     saveData();
@@ -1207,7 +1350,7 @@ document.getElementById('import-file-input').addEventListener('change', (e) => {
 });
 
 document.getElementById('btn-reset-data').addEventListener('click', () => {
-    if (confirm("CAUTION: This will delete ALL transactions, custom categories, budgets, income sources, quick-add buttons and debts permanently. Do you wish to proceed?")) {
+    if (confirm("CAUTION: This permanently deletes ALL your data — transactions, categories, budgets, income sources, quick-adds, debts, goals and investments. Do you wish to proceed?")) {
         localStorage.removeItem('96orge_budget_state');
         state = {
             transactions: [],
@@ -1216,7 +1359,9 @@ document.getElementById('btn-reset-data').addEventListener('click', () => {
             incomeSources: [],
             quickAdds: [],
             debts: [],
-            settings: { ...DEFAULT_SETTINGS }
+            goals: [],
+            investments: { holdings: [], activity: [] },
+            settings: { ...DEFAULT_SETTINGS, activityDays: [] }
         };
         saveData();
         showToast("Workspace database reset", "warning");
@@ -1386,6 +1531,7 @@ function renderRecurringIncomeWidget() {
 function renderIncomeView() {
     renderIncomeSourcesList();
     renderQuickAddsManager();
+    renderSubscriptions();
 }
 
 function renderIncomeSourcesList() {
@@ -1537,11 +1683,15 @@ document.getElementById('log-payment-form').addEventListener('submit', (e) => {
         categoryId: src.categoryId, date, notes: note, sourceId: src.id
     });
     src.lastLoggedDate = date;
+    touchStreak();
     saveData();
     closeLogPaymentModal();
     updateDashboard();
     if (document.getElementById('view-transactions').classList.contains('active')) renderTransactionsList();
     showToast(`${formatNaira(amount)} added to income`, 'success');
+
+    // Pay yourself first — offer to move some into active goals.
+    maybePromptFundGoals();
 });
 
 // --- Quick-add tiles ---
@@ -1578,6 +1728,7 @@ window.fireQuickAdd = function(id) {
         id: makeId('tx'), title: qa.label, type: qa.type, amount: qa.amount,
         categoryId: qa.categoryId, date: todayISO(), notes: 'Quick add'
     });
+    touchStreak();
     saveData();
     updateDashboard();
     if (document.getElementById('view-transactions').classList.contains('active')) renderTransactionsList();
@@ -1763,48 +1914,100 @@ function debtRemaining(debt) {
     return Math.max(0, debt.originalAmount - debtPaid(debt));
 }
 
+function debtOverdueDays(d) {
+    return d.dueDate ? -daysUntil(d.dueDate) : 0; // positive once past due
+}
+
+function debtSideHtml(items, label, verb) {
+    if (items.length === 0) return '';
+    const total = items.reduce((s, d) => s + debtRemaining(d), 0);
+    const withDue = items.filter(d => d.dueDate).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    const focus = withDue[0] || items.slice().sort((a, b) => debtRemaining(a) - debtRemaining(b))[0];
+    const overdue = debtOverdueDays(focus) > 0;
+    const pct = Math.round((debtPaid(focus) / focus.originalAmount) * 100);
+    const dueLabel = focus.dueDate
+        ? (overdue ? `${debtOverdueDays(focus)} day${debtOverdueDays(focus) > 1 ? 's' : ''} overdue`
+                   : `due ${new Date(focus.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`)
+        : '';
+    return `
+        <div class="debt-side">
+            <div class="debt-widget-total">${label} <strong>${formatNaira(total)}</strong> across ${items.length}</div>
+            <div class="debt-focus">
+                <div class="debt-focus-row">
+                    <span>${escapeHtml(focus.name)}${dueLabel ? ` &bull; <span class="${overdue ? 'text-danger' : ''}">${dueLabel}</span>` : ''}</span>
+                    <span>${formatNaira(debtRemaining(focus))} ${verb}</span>
+                </div>
+                <div class="budget-progress-track"><div class="budget-progress-bar ${overdue ? 'progress-danger' : 'progress-safe'}" style="width:${Math.min(100, pct)}%"></div></div>
+                <button class="btn btn-primary btn-sm" onclick="openDebtPaymentModal('${focus.id}')"><i class="fa-solid fa-coins"></i> Record Payment</button>
+            </div>
+        </div>`;
+}
+
 function renderDebtWidget() {
     const box = document.getElementById('dashboard-debt-list');
     if (!box) return;
 
     if (state.debts.length === 0) {
-        box.innerHTML = placeholder('fa-hand-holding-dollar', 'No debts tracked. Add what you owe to pay it down bit by bit.');
+        box.innerHTML = placeholder('fa-hand-holding-dollar', 'No debts or loans tracked. Add what you owe — or what people owe you.');
         return;
     }
 
     const iOwe = state.debts.filter(d => d.kind === 'iOwe' && d.status === 'active');
-    if (iOwe.length === 0) {
-        box.innerHTML = placeholder('fa-circle-check', 'Nothing outstanding that you owe.');
+    const owedToMe = state.debts.filter(d => d.kind === 'owedToMe' && d.status === 'active');
+
+    if (iOwe.length === 0 && owedToMe.length === 0) {
+        box.innerHTML = placeholder('fa-circle-check', 'All debts and loans are settled.');
         return;
     }
 
-    const totalOwed = iOwe.reduce((s, d) => s + debtRemaining(d), 0);
-    const withDue = iOwe.filter(d => d.dueDate).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-    const focus = withDue[0] || iOwe.slice().sort((a, b) => debtRemaining(a) - debtRemaining(b))[0];
+    box.innerHTML =
+        debtSideHtml(iOwe, 'You owe', 'left') +
+        debtSideHtml(owedToMe, 'Owed to you', 'to collect');
+}
 
-    let html = `<div class="debt-widget-total">You owe <strong>${formatNaira(totalOwed)}</strong> across ${iOwe.length} debt${iOwe.length > 1 ? 's' : ''}</div>`;
-    if (focus) {
-        const pct = Math.round((debtPaid(focus) / focus.originalAmount) * 100);
-        html += `
-            <div class="debt-focus">
-                <div class="debt-focus-row">
-                    <span>${escapeHtml(focus.name)}${focus.dueDate ? ` &bull; due ${new Date(focus.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}</span>
-                    <span>${formatNaira(debtRemaining(focus))} left</span>
-                </div>
-                <div class="budget-progress-track"><div class="budget-progress-bar progress-safe" style="width:${Math.min(100, pct)}%"></div></div>
-                <button class="btn btn-primary btn-sm" onclick="openDebtPaymentModal('${focus.id}')"><i class="fa-solid fa-coins"></i> Record Payment</button>
+function renderPeopleRollup() {
+    const box = document.getElementById('debts-people-rollup');
+    if (!box) return;
+
+    const active = state.debts.filter(d => d.status === 'active' && d.counterparty);
+    if (active.length === 0) { box.innerHTML = ''; return; }
+
+    const byPerson = {};
+    active.forEach(d => {
+        const key = d.counterparty.trim();
+        if (!byPerson[key]) byPerson[key] = { net: 0, count: 0 };
+        byPerson[key].net += (d.kind === 'owedToMe' ? 1 : -1) * debtRemaining(d);
+        byPerson[key].count += 1;
+    });
+
+    const rows = Object.entries(byPerson)
+        .filter(([, v]) => Math.abs(v.net) > 0.005)
+        .sort((a, b) => b[1].net - a[1].net)
+        .map(([name, v]) => {
+            const owesYou = v.net > 0;
+            return `<div class="person-rollup-row">
+                <span class="person-rollup-name">${escapeHtml(name)}</span>
+                <span class="person-rollup-amount ${owesYou ? 'text-success' : 'text-danger'}">
+                    ${owesYou ? 'owes you' : 'you owe'} ${formatNaira(Math.abs(v.net))}
+                </span>
+                <span class="person-rollup-count">${v.count} item${v.count > 1 ? 's' : ''}</span>
             </div>`;
-    }
-    box.innerHTML = html;
+        }).join('');
+
+    box.innerHTML = rows
+        ? `<h3 class="debt-group-title">By Person</h3><div class="person-rollup">${rows}</div>`
+        : '';
 }
 
 function renderDebtsView() {
+    renderPeopleRollup();
+
     const box = document.getElementById('debts-list');
     if (!box) return;
     box.innerHTML = '';
 
     if (state.debts.length === 0) {
-        box.innerHTML = placeholder('fa-hand-holding-dollar', 'No debts yet. Use “Add Debt” to track money you owe or money owed to you.');
+        box.innerHTML = placeholder('fa-hand-holding-dollar', 'No debts yet. Use “Add Debt” to track money you owe or money you lent out.');
         return;
     }
 
@@ -2014,6 +2217,7 @@ document.getElementById('debt-payment-form').addEventListener('submit', (e) => {
     }
 
     d.payments.push({ id: makeId('pmt'), amount, date, note, txId });
+    touchStreak();
 
     const settledNow = debtRemaining(d) <= 0 && d.status !== 'settled';
     if (settledNow) d.status = 'settled';
@@ -2026,10 +2230,697 @@ document.getElementById('debt-payment-form').addEventListener('submit', (e) => {
     showToast(settledNow ? `${d.name} is fully settled!` : `Payment of ${formatNaira(amount)} recorded`, 'success');
 });
 
+// ============================================================================
+//  Milestone 2 — habit strip, savings goals, investments, subscriptions
+// ============================================================================
+
+// --- Habit "Today" strip ---
+function daysLeftInMonth() {
+    const { year, month } = getActiveMonth();
+    const now = new Date();
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const viewingCurrent = year === now.getFullYear() && month === now.getMonth();
+    return viewingCurrent ? Math.max(1, lastDay - now.getDate() + 1) : lastDay;
+}
+
+function computeSafeToSpend() {
+    const { year, month } = getActiveMonth();
+    const { income, expense } = monthTotals();
+    let unspentBudgets = 0;
+    Object.keys(state.budgets).forEach(catId => {
+        unspentBudgets += Math.max(0, state.budgets[catId] - monthCategorySpend(catId, year, month));
+    });
+    const safeMonth = income - expense - unspentBudgets;
+    const left = daysLeftInMonth();
+    return { safeMonth, perDay: safeMonth / left, daysLeft: left };
+}
+
+function computeStreak() {
+    const days = [...new Set(state.settings.activityDays)].sort();
+    if (days.length === 0) return { current: 0, best: 0 };
+    let best = 1, run = 1;
+    for (let i = 1; i < days.length; i++) {
+        const diff = (new Date(days[i]) - new Date(days[i - 1])) / 86400000;
+        run = diff === 1 ? run + 1 : 1;
+        best = Math.max(best, run);
+    }
+    const today = todayISO();
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    let current = 0;
+    if (days[days.length - 1] === today || days[days.length - 1] === yesterday) {
+        current = 1;
+        for (let i = days.length - 1; i > 0; i--) {
+            if ((new Date(days[i]) - new Date(days[i - 1])) / 86400000 === 1) current++;
+            else break;
+        }
+    }
+    return { current, best };
+}
+
+function biggestMover() {
+    const { year, month } = getActiveMonth();
+    const prev = new Date(year, month - 1, 1);
+    const pY = prev.getFullYear(), pM = prev.getMonth();
+    const thisM = {}, lastM = {};
+    state.transactions.forEach(tx => {
+        if (tx.type !== 'expense') return;
+        const d = new Date(tx.date);
+        if (d.getFullYear() === year && d.getMonth() === month) thisM[tx.categoryId] = (thisM[tx.categoryId] || 0) + tx.amount;
+        else if (d.getFullYear() === pY && d.getMonth() === pM) lastM[tx.categoryId] = (lastM[tx.categoryId] || 0) + tx.amount;
+    });
+    if (Object.keys(lastM).length === 0) return null;
+    let top = null;
+    new Set([...Object.keys(thisM), ...Object.keys(lastM)]).forEach(catId => {
+        const delta = (thisM[catId] || 0) - (lastM[catId] || 0);
+        if (!top || Math.abs(delta) > Math.abs(top.delta)) top = { catId, delta, base: lastM[catId] || 0 };
+    });
+    return top && Math.abs(top.delta) >= 1000 ? top : null;
+}
+
+function renderTodayStrip() {
+    const box = document.getElementById('dashboard-today-strip');
+    if (!box) return;
+
+    const s = computeSafeToSpend();
+    const streak = computeStreak();
+    const mover = biggestMover();
+
+    let safeTone = 'good';
+    if (s.safeMonth < 0) safeTone = 'bad';
+    else if (s.perDay < 2000) safeTone = 'warn';
+
+    const tiles = [`
+        <div class="today-tile today-${safeTone}">
+            <span class="today-label">Safe to spend</span>
+            <span class="today-value">${formatNaira(Math.abs(s.safeMonth))}</span>
+            <span class="today-sub">${s.safeMonth < 0
+                ? 'over your plan this month'
+                : `${formatNaira(Math.max(0, s.perDay))}/day &middot; ${s.daysLeft} day${s.daysLeft > 1 ? 's' : ''} left`}</span>
+        </div>`, `
+        <div class="today-tile">
+            <span class="today-label">Logging streak</span>
+            <span class="today-value">${streak.current === 0 ? '—' : `${streak.current}🔥`}</span>
+            <span class="today-sub">${streak.current === 0 ? 'Log something today to start' : `Best run: ${streak.best} days`}</span>
+        </div>`];
+
+    if (mover) {
+        const cat = catById(mover.catId);
+        const up = mover.delta > 0;
+        const pct = mover.base > 0 ? Math.round(Math.abs(mover.delta) / mover.base * 100) : null;
+        tiles.push(`
+            <div class="today-tile today-${up ? 'warn' : 'good'}">
+                <span class="today-label">vs last month</span>
+                <span class="today-value">${escapeHtml(cat.name)}</span>
+                <span class="today-sub">${up ? '+' : '−'}${formatNaira(Math.abs(mover.delta))}${pct !== null ? ` (${pct}% ${up ? 'more' : 'less'})` : ''}</span>
+            </div>`);
+    }
+
+    box.innerHTML = tiles.join('');
+}
+
+// --- Savings goals ---
+function goalProgress(g) {
+    return g.targetAmount > 0 ? Math.min(100, Math.round(g.savedAmount / g.targetAmount * 100)) : 0;
+}
+
+function goalMonthlyNeeded(g) {
+    if (!g.targetDate) return null;
+    const remaining = Math.max(0, g.targetAmount - g.savedAmount);
+    const months = Math.max(1, Math.ceil((new Date(g.targetDate) - new Date()) / (30 * 86400000)));
+    return remaining / months;
+}
+
+function renderGoalsWidget() {
+    const box = document.getElementById('dashboard-goals-list');
+    if (!box) return;
+    if (state.goals.length === 0) {
+        box.innerHTML = placeholder('fa-bullseye', 'No savings goals yet. Set one for a certificate or your emergency fund.');
+        return;
+    }
+    const active = state.goals.filter(g => g.status === 'active').slice(0, 3);
+    const totalSaved = state.goals.reduce((s, g) => s + g.savedAmount, 0);
+    const totalTarget = state.goals.reduce((s, g) => s + g.targetAmount, 0);
+    box.innerHTML =
+        (active.length ? active : state.goals.slice(0, 3)).map(g => `
+            <div class="goal-mini">
+                <div class="goal-mini-row"><span>${escapeHtml(g.name)}</span><span>${formatNaira(g.savedAmount)} / ${formatNaira(g.targetAmount)}</span></div>
+                <div class="budget-progress-track"><div class="budget-progress-bar progress-safe" style="width:${goalProgress(g)}%"></div></div>
+            </div>`).join('') +
+        `<div class="goal-mini-total">Saved ${formatNaira(totalSaved)} of ${formatNaira(totalTarget)} across ${state.goals.length} goal${state.goals.length > 1 ? 's' : ''}</div>`;
+}
+
+function renderGoalsView() {
+    const box = document.getElementById('goals-list');
+    if (!box) return;
+    box.innerHTML = '';
+    if (state.goals.length === 0) {
+        box.innerHTML = placeholder('fa-bullseye', 'No goals yet. Use “New Goal” to start a sinking fund.');
+        return;
+    }
+    state.goals.forEach(g => box.appendChild(goalCard(g)));
+}
+
+function goalCard(g) {
+    const pct = goalProgress(g);
+    const reached = g.status === 'reached' || g.savedAmount >= g.targetAmount;
+    const monthly = goalMonthlyNeeded(g);
+    const history = g.contributions.length
+        ? g.contributions.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).map(c =>
+            `<li><span>${shortDate(c.date)}</span><span>${formatNaira(c.amount)}</span><span class="debt-hist-note">${escapeHtml(c.note || '')}</span></li>`).join('')
+        : '<li class="subtle">No contributions yet.</li>';
+    const card = document.createElement('div');
+    card.className = 'goal-card glass-card' + (reached ? ' is-settled' : '');
+    card.innerHTML = `
+        <div class="goal-card-head">
+            <div class="goal-card-icon" style="background:${g.color}20;color:${g.color}"><i class="${g.icon || 'fa-solid fa-bullseye'}"></i></div>
+            <div class="goal-card-title">
+                <span class="goal-card-name">${escapeHtml(g.name)}</span>
+                <span class="goal-card-meta">${g.targetDate ? `Target ${shortDate(g.targetDate)}` : 'No deadline'}</span>
+            </div>
+            <span class="goal-card-pct">${pct}%</span>
+        </div>
+        <div class="budget-progress-track"><div class="budget-progress-bar ${reached ? 'progress-safe' : 'progress-warning'}" style="width:${pct}%"></div></div>
+        <div class="goal-card-sub">${formatNaira(g.savedAmount)} of ${formatNaira(g.targetAmount)}${!reached && monthly ? ` &bull; ${formatNaira(monthly)}/month to hit target` : ''}${reached ? ' &bull; reached!' : ''}</div>
+        <details class="debt-history"><summary>Contributions (${g.contributions.length})</summary><ul>${history}</ul></details>
+        <div class="debt-card-actions">
+            <button class="btn btn-primary btn-sm" onclick="openContributeModal('${g.id}')"><i class="fa-solid fa-plus"></i> Contribute</button>
+            <button class="btn btn-outline btn-sm" onclick="openGoalModal('${g.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+            <button class="btn-action btn-action-delete" onclick="deleteGoal('${g.id}')" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+        </div>
+    `;
+    return card;
+}
+
+const goalModal = document.getElementById('goal-modal');
+let editingGoalId = null;
+
+function openGoalModal(id = null) {
+    const g = id ? state.goals.find(x => x.id === id) : null;
+    editingGoalId = g ? g.id : null;
+    document.getElementById('goal-modal-title').textContent = g ? 'Edit Goal' : 'New Goal';
+    document.getElementById('goal-name').value = g ? g.name : '';
+    document.getElementById('goal-target').value = g ? g.targetAmount : '';
+    document.getElementById('goal-date').value = g && g.targetDate ? g.targetDate : '';
+    document.getElementById('goal-icon').value = g ? (g.icon || 'fa-solid fa-bullseye') : 'fa-solid fa-bullseye';
+    document.getElementById('goal-color').value = g ? g.color : '#8b5cf6';
+    goalModal.classList.add('active');
+}
+window.openGoalModal = openGoalModal;
+function closeGoalModal() { goalModal.classList.remove('active'); editingGoalId = null; }
+
+document.getElementById('goal-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('goal-name').value.trim();
+    const targetAmount = parseFloat(document.getElementById('goal-target').value);
+    const targetDate = document.getElementById('goal-date').value || null;
+    const icon = document.getElementById('goal-icon').value;
+    const color = document.getElementById('goal-color').value;
+    if (!name || isNaN(targetAmount) || targetAmount <= 0) {
+        showToast('Fill in a name and target amount', 'danger');
+        return;
+    }
+    if (editingGoalId) {
+        const g = state.goals.find(x => x.id === editingGoalId);
+        if (g) {
+            Object.assign(g, { name, targetAmount, targetDate, icon, color });
+            g.status = g.savedAmount >= g.targetAmount ? 'reached' : 'active';
+        }
+    } else {
+        state.goals.push({ id: makeId('goal'), name, targetAmount, targetDate, savedAmount: 0, icon, color, status: 'active', contributions: [] });
+    }
+    saveData();
+    closeGoalModal();
+    renderGoalsView();
+    updateDashboard();
+    showToast('Goal saved', 'success');
+});
+
+window.deleteGoal = function(id) {
+    if (!confirm('Delete this goal? Contributions already logged as transactions stay.')) return;
+    state.goals = state.goals.filter(g => g.id !== id);
+    saveData();
+    renderGoalsView();
+    updateDashboard();
+    showToast('Goal removed', 'success');
+};
+
+function addGoalContribution(g, amount, date, note, logTx) {
+    let txId = null;
+    if (logTx) {
+        txId = makeId('tx');
+        state.transactions.push({
+            id: txId, title: `Savings — ${g.name}`, type: 'expense', amount,
+            categoryId: 'cat-savings', date, notes: note
+        });
+    }
+    g.contributions.push({ id: makeId('gc'), amount, date, note, txId });
+    g.savedAmount += amount;
+    const reachedNow = g.savedAmount >= g.targetAmount && g.status !== 'reached';
+    if (reachedNow) g.status = 'reached';
+    showToast(reachedNow ? `${g.name} goal reached!` : `${formatNaira(amount)} added to ${g.name}`, 'success');
+}
+
+const contributeModal = document.getElementById('contribute-modal');
+let contributingGoalId = null;
+
+function openContributeModal(id) {
+    const g = state.goals.find(x => x.id === id);
+    if (!g) return;
+    contributingGoalId = id;
+    document.getElementById('contribute-title').textContent = `Contribute — ${g.name}`;
+    document.getElementById('contribute-amount').value = '';
+    document.getElementById('contribute-date').value = todayISO();
+    document.getElementById('contribute-note').value = '';
+    document.getElementById('contribute-log-tx').checked = true;
+    contributeModal.classList.add('active');
+}
+window.openContributeModal = openContributeModal;
+function closeContributeModal() { contributeModal.classList.remove('active'); contributingGoalId = null; }
+
+document.getElementById('contribute-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const g = state.goals.find(x => x.id === contributingGoalId);
+    if (!g) return;
+    const amount = parseFloat(document.getElementById('contribute-amount').value);
+    const date = document.getElementById('contribute-date').value;
+    const note = document.getElementById('contribute-note').value.trim();
+    const logTx = document.getElementById('contribute-log-tx').checked;
+    if (isNaN(amount) || amount <= 0 || !date) { showToast('Enter a valid amount and date', 'danger'); return; }
+    addGoalContribution(g, amount, date, note, logTx);
+    touchStreak();
+    saveData();
+    closeContributeModal();
+    renderGoalsView();
+    updateDashboard();
+    if (document.getElementById('view-transactions').classList.contains('active')) renderTransactionsList();
+});
+
+// --- Pay yourself first ---
+const fundGoalsModal = document.getElementById('fund-goals-modal');
+
+function maybePromptFundGoals() {
+    const active = state.goals.filter(g => g.status === 'active');
+    if (active.length === 0 || !fundGoalsModal) return;
+    document.getElementById('fund-goals-list').innerHTML = active.map(g => `
+        <label class="fund-goal-row">
+            <span class="fund-goal-name">${escapeHtml(g.name)}</span>
+            <span class="fund-goal-meta">${formatNaira(g.savedAmount)} / ${formatNaira(g.targetAmount)}</span>
+            <span class="input-prefix-wrapper">
+                <span class="input-prefix">₦</span>
+                <input type="number" class="fund-goal-input" data-goal="${g.id}" min="0" step="0.01" placeholder="0">
+            </span>
+        </label>`).join('');
+    fundGoalsModal.classList.add('active');
+}
+function closeFundGoalsModal() { fundGoalsModal.classList.remove('active'); }
+
+document.getElementById('fund-goals-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    let any = false;
+    document.querySelectorAll('.fund-goal-input').forEach(inp => {
+        const amount = parseFloat(inp.value);
+        if (isNaN(amount) || amount <= 0) return;
+        const g = state.goals.find(x => x.id === inp.dataset.goal);
+        if (!g) return;
+        addGoalContribution(g, amount, todayISO(), 'Pay yourself first', true);
+        any = true;
+    });
+    if (any) { touchStreak(); saveData(); updateDashboard(); }
+    closeFundGoalsModal();
+});
+
+// --- Investments ---
+function invRate() { return state.settings.usdRate; }
+
+function toNaira(amount, ccy) {
+    if (ccy === 'USD') return invRate() ? amount * invRate() : null;
+    return amount;
+}
+
+function holdingCcy(holdingId) {
+    const h = state.investments.holdings.find(x => x.id === holdingId);
+    return h ? h.currency : 'NGN';
+}
+
+function holdingValueNaira(h) { return toNaira(h.units * h.currentPrice, h.currency); }
+function holdingCostNaira(h) { return toNaira(h.units * h.avgCost, h.currency); }
+
+function portfolioTotals() {
+    let valueN = 0, costN = 0, realized = 0, missingRate = false;
+    state.investments.holdings.forEach(h => {
+        const v = holdingValueNaira(h), c = holdingCostNaira(h);
+        if (v === null || c === null) { missingRate = true; return; }
+        valueN += v; costN += c;
+    });
+    state.investments.activity.forEach(a => {
+        if (a.type !== 'sell') return;
+        const pl = toNaira(a.realizedPL || 0, holdingCcy(a.holdingId));
+        if (pl !== null) realized += pl;
+    });
+    return { valueN, costN, unrealized: valueN - costN, realized, missingRate };
+}
+
+function renderInvestmentsWidget() {
+    const box = document.getElementById('dashboard-invest-list');
+    if (!box) return;
+    if (state.investments.holdings.length === 0) {
+        box.innerHTML = placeholder('fa-arrow-trend-up', 'No holdings yet. Add your stocks to track value and returns.');
+        return;
+    }
+    const t = portfolioTotals();
+    const plPct = t.costN > 0 ? Math.round(t.unrealized / t.costN * 100) : 0;
+    const up = t.unrealized >= 0;
+    box.innerHTML = `
+        <div class="invest-widget-value">${formatNaira(t.valueN)}<span class="invest-widget-caption"> portfolio value</span></div>
+        <div class="invest-widget-pl ${up ? 'text-success' : 'text-danger'}">
+            ${up ? '▲' : '▼'} ${formatNaira(Math.abs(t.unrealized))} (${up ? '+' : ''}${plPct}%) unrealised
+        </div>
+        ${t.missingRate ? `<div class="nw-cap-msg subtle">Set a ₦/$ rate on the Investments page to value USD holdings.</div>` : ''}
+    `;
+}
+
+function renderInvestmentsView() {
+    renderPortfolioSummary();
+    renderHoldingsList();
+}
+
+function renderPortfolioSummary() {
+    const box = document.getElementById('portfolio-summary');
+    if (!box) return;
+    const hasUsd = state.investments.holdings.some(h => h.currency === 'USD');
+    const t = portfolioTotals();
+    const up = t.unrealized >= 0;
+    const plPct = t.costN > 0 ? Math.round(t.unrealized / t.costN * 100) : 0;
+    box.innerHTML = `
+        <div class="portfolio-metrics">
+            <div><span class="pm-label">Value</span><span class="pm-value">${formatNaira(t.valueN)}</span></div>
+            <div><span class="pm-label">Cost basis</span><span class="pm-value">${formatNaira(t.costN)}</span></div>
+            <div><span class="pm-label">Unrealised</span><span class="pm-value ${up ? 'text-success' : 'text-danger'}">${up ? '+' : ''}${formatNaira(t.unrealized)} (${plPct}%)</span></div>
+            <div><span class="pm-label">Realised</span><span class="pm-value ${t.realized >= 0 ? 'text-success' : 'text-danger'}">${t.realized >= 0 ? '+' : ''}${formatNaira(t.realized)}</span></div>
+        </div>
+        ${hasUsd ? `
+        <div class="portfolio-fx">
+            <label for="usd-rate-input">₦ per US$1</label>
+            <span class="input-prefix-wrapper">
+                <span class="input-prefix">₦</span>
+                <input type="number" id="usd-rate-input" min="0" step="0.01" value="${invRate() || ''}" placeholder="e.g. 1600">
+            </span>
+            ${t.missingRate ? '<span class="pill pill-due">rate needed</span>' : ''}
+        </div>` : ''}
+    `;
+    const rateInput = document.getElementById('usd-rate-input');
+    if (rateInput) rateInput.addEventListener('change', () => {
+        const v = parseFloat(rateInput.value);
+        state.settings.usdRate = (isNaN(v) || v <= 0) ? null : v;
+        saveData();
+        renderInvestmentsView();
+        updateDashboard();
+    });
+}
+
+function renderHoldingsList() {
+    const box = document.getElementById('holdings-list');
+    if (!box) return;
+    box.innerHTML = '';
+    if (state.investments.holdings.length === 0) {
+        box.innerHTML = placeholder('fa-arrow-trend-up', 'No holdings yet. Use “Add Holding”.');
+        return;
+    }
+    state.investments.holdings.forEach(h => box.appendChild(holdingCard(h)));
+}
+
+function holdingCard(h) {
+    const sym = h.currency === 'USD' ? '$' : '₦';
+    const valueLocal = h.units * h.currentPrice;
+    const costLocal = h.units * h.avgCost;
+    const plLocal = valueLocal - costLocal;
+    const plPct = costLocal > 0 ? Math.round(plLocal / costLocal * 100) : 0;
+    const up = plLocal >= 0;
+    const nairaValue = holdingValueNaira(h);
+    const acts = state.investments.activity.filter(a => a.holdingId === h.id)
+        .slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+    const history = acts.length
+        ? acts.map(a => `<li>
+            <span>${shortDate(a.date)}</span>
+            <span>${a.type}${a.type !== 'dividend' ? ` ${a.units} @ ${sym}${a.pricePerUnit}` : ''}</span>
+            <span class="debt-hist-note">${sym}${Math.round(a.amount).toLocaleString()}${a.type === 'sell' && a.realizedPL ? ` &bull; P/L ${sym}${Math.round(a.realizedPL).toLocaleString()}` : ''}</span>
+          </li>`).join('')
+        : '<li class="subtle">No activity recorded.</li>';
+
+    const card = document.createElement('div');
+    card.className = 'holding-card glass-card';
+    card.innerHTML = `
+        <div class="holding-head">
+            <div class="holding-title">
+                <span class="holding-name">${escapeHtml(h.name)} ${h.ticker ? `<span class="holding-ticker">${escapeHtml(h.ticker)}</span>` : ''}</span>
+                <span class="holding-meta">${h.units} units &bull; avg ${sym}${h.avgCost} &bull; ${escapeHtml(h.account || 'account n/a')} &bull; ${h.currency}</span>
+            </div>
+            <div class="holding-value">
+                <span>${sym}${Math.round(valueLocal).toLocaleString()}</span>
+                ${nairaValue !== null && h.currency === 'USD' ? `<span class="holding-value-naira">≈ ${formatNaira(nairaValue)}</span>` : ''}
+            </div>
+        </div>
+        <div class="holding-price-row">
+            <label>Price ${sym}</label>
+            <input type="number" class="holding-price-input" min="0" step="0.01" value="${h.currentPrice}" onchange="setHoldingPrice('${h.id}', this.value)">
+            <span class="holding-pl ${up ? 'text-success' : 'text-danger'}">${up ? '+' : ''}${sym}${Math.round(plLocal).toLocaleString()} (${plPct}%)</span>
+        </div>
+        <details class="debt-history"><summary>Activity (${acts.length})</summary><ul>${history}</ul></details>
+        <div class="debt-card-actions">
+            <button class="btn btn-primary btn-sm" onclick="openActivityModal('${h.id}','buy')">Buy</button>
+            <button class="btn btn-outline btn-sm" onclick="openActivityModal('${h.id}','sell')">Sell</button>
+            <button class="btn btn-outline btn-sm" onclick="openActivityModal('${h.id}','dividend')">Dividend</button>
+            <button class="btn btn-outline btn-sm" onclick="openHoldingModal('${h.id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+            <button class="btn-action btn-action-delete" onclick="deleteHolding('${h.id}')" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+        </div>
+    `;
+    return card;
+}
+
+window.setHoldingPrice = function(id, val) {
+    const h = state.investments.holdings.find(x => x.id === id);
+    if (!h) return;
+    const v = parseFloat(val);
+    if (isNaN(v) || v < 0) return;
+    h.currentPrice = v;
+    saveData();
+    renderInvestmentsView();
+    updateDashboard();
+};
+
+const holdingModal = document.getElementById('holding-modal');
+let editingHoldingId = null;
+
+function openHoldingModal(id = null) {
+    const h = id ? state.investments.holdings.find(x => x.id === id) : null;
+    editingHoldingId = h ? h.id : null;
+    document.getElementById('holding-modal-title').textContent = h ? 'Edit Holding' : 'Add Holding';
+    document.querySelector(`input[name="holding-ccy"][value="${h ? h.currency : 'NGN'}"]`).checked = true;
+    document.getElementById('holding-name').value = h ? h.name : '';
+    document.getElementById('holding-ticker').value = h ? (h.ticker || '') : '';
+    document.getElementById('holding-account').value = h ? (h.account || '') : '';
+    document.getElementById('holding-units').value = h ? h.units : '';
+    document.getElementById('holding-avgcost').value = h ? h.avgCost : '';
+    document.getElementById('holding-price').value = h ? h.currentPrice : '';
+    document.getElementById('holding-notes').value = h ? (h.notes || '') : '';
+    holdingModal.classList.add('active');
+}
+window.openHoldingModal = openHoldingModal;
+function closeHoldingModal() { holdingModal.classList.remove('active'); editingHoldingId = null; }
+
+document.getElementById('holding-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const currency = document.querySelector('input[name="holding-ccy"]:checked').value;
+    const name = document.getElementById('holding-name').value.trim();
+    const ticker = document.getElementById('holding-ticker').value.trim().toUpperCase();
+    const account = document.getElementById('holding-account').value.trim();
+    const units = parseFloat(document.getElementById('holding-units').value);
+    const avgCost = parseFloat(document.getElementById('holding-avgcost').value);
+    const currentPriceRaw = parseFloat(document.getElementById('holding-price').value);
+    const notes = document.getElementById('holding-notes').value.trim();
+    if (!name || isNaN(units) || units < 0 || isNaN(avgCost) || avgCost < 0) {
+        showToast('Fill in name, units and average cost', 'danger');
+        return;
+    }
+    const currentPrice = isNaN(currentPriceRaw) ? avgCost : currentPriceRaw;
+    if (editingHoldingId) {
+        const h = state.investments.holdings.find(x => x.id === editingHoldingId);
+        if (h) Object.assign(h, { currency, name, ticker, account, units, avgCost, currentPrice, notes });
+    } else {
+        state.investments.holdings.push({ id: makeId('hold'), currency, name, ticker, account, units, avgCost, currentPrice, notes });
+    }
+    saveData();
+    closeHoldingModal();
+    renderInvestmentsView();
+    updateDashboard();
+    showToast('Holding saved', 'success');
+});
+
+window.deleteHolding = function(id) {
+    if (!confirm('Delete this holding and its recorded activity? Cash transactions already logged stay.')) return;
+    state.investments.holdings = state.investments.holdings.filter(h => h.id !== id);
+    state.investments.activity = state.investments.activity.filter(a => a.holdingId !== id);
+    saveData();
+    renderInvestmentsView();
+    updateDashboard();
+    showToast('Holding removed', 'success');
+};
+
+const activityModal = document.getElementById('activity-modal');
+let activityHoldingId = null;
+
+function syncActivityFields() {
+    const t = document.querySelector('input[name="activity-type"]:checked').value;
+    const hide = t === 'dividend';
+    document.getElementById('activity-units-group').hidden = hide;
+    document.getElementById('activity-price-group').hidden = hide;
+    document.getElementById('activity-log-tx-label').textContent = t === 'dividend'
+        ? 'Log dividend as income'
+        : (t === 'buy' ? 'Also log the purchase as a cash expense' : 'Also log the proceeds as cash income');
+}
+
+function recalcActivityAmount() {
+    const t = document.querySelector('input[name="activity-type"]:checked').value;
+    if (t === 'dividend') return;
+    const units = parseFloat(document.getElementById('activity-units').value) || 0;
+    const price = parseFloat(document.getElementById('activity-price').value) || 0;
+    const fee = parseFloat(document.getElementById('activity-fee').value) || 0;
+    const gross = units * price;
+    document.getElementById('activity-amount').value = (t === 'buy' ? gross + fee : Math.max(0, gross - fee)).toFixed(2);
+}
+
+function openActivityModal(holdingId, type) {
+    const h = state.investments.holdings.find(x => x.id === holdingId);
+    if (!h) return;
+    activityHoldingId = holdingId;
+    document.getElementById('activity-modal-title').textContent =
+        `${type[0].toUpperCase() + type.slice(1)} — ${h.name}`;
+    document.querySelector(`input[name="activity-type"][value="${type}"]`).checked = true;
+    document.getElementById('activity-units').value = type === 'sell' ? h.units : (type === 'dividend' ? '' : '');
+    document.getElementById('activity-price').value = type === 'dividend' ? '' : h.currentPrice;
+    document.getElementById('activity-fee').value = '';
+    document.getElementById('activity-amount').value = '';
+    document.getElementById('activity-date').value = todayISO();
+    document.getElementById('activity-note').value = '';
+    document.getElementById('activity-log-tx').checked = (type === 'dividend');
+    syncActivityFields();
+    recalcActivityAmount();
+    activityModal.classList.add('active');
+}
+window.openActivityModal = openActivityModal;
+function closeActivityModal() { activityModal.classList.remove('active'); activityHoldingId = null; }
+
+['activity-units', 'activity-price', 'activity-fee'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', recalcActivityAmount);
+});
+document.querySelectorAll('input[name="activity-type"]').forEach(r => r.addEventListener('change', () => {
+    syncActivityFields();
+    recalcActivityAmount();
+}));
+
+document.getElementById('activity-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const h = state.investments.holdings.find(x => x.id === activityHoldingId);
+    if (!h) return;
+    const type = document.querySelector('input[name="activity-type"]:checked').value;
+    const units = parseFloat(document.getElementById('activity-units').value) || 0;
+    const price = parseFloat(document.getElementById('activity-price').value) || 0;
+    const fee = parseFloat(document.getElementById('activity-fee').value) || 0;
+    const amount = parseFloat(document.getElementById('activity-amount').value);
+    const date = document.getElementById('activity-date').value;
+    const note = document.getElementById('activity-note').value.trim();
+    const logTx = document.getElementById('activity-log-tx').checked;
+
+    if (!date || isNaN(amount) || amount <= 0) { showToast('Enter a valid amount and date', 'danger'); return; }
+    if (type !== 'dividend' && units <= 0) { showToast('Enter the number of units', 'danger'); return; }
+    if (type === 'sell' && units > h.units) { showToast(`You only hold ${h.units} units`, 'danger'); return; }
+
+    let realizedPL = 0;
+    if (type === 'buy') {
+        const newUnits = h.units + units;
+        h.avgCost = newUnits > 0 ? (h.units * h.avgCost + units * price) / newUnits : price;
+        h.units = newUnits;
+    } else if (type === 'sell') {
+        realizedPL = (price - h.avgCost) * units - fee;
+        h.units = Math.max(0, h.units - units);
+    }
+
+    let txId = null;
+    if (logTx) {
+        txId = makeId('tx');
+        const isIncome = (type === 'sell' || type === 'dividend');
+        state.transactions.push({
+            id: txId,
+            title: `${h.name} — ${type}`,
+            type: isIncome ? 'income' : 'expense',
+            amount: toNaira(amount, h.currency) || amount,
+            categoryId: isIncome ? 'cat-investments' : 'cat-invest',
+            date, notes: note
+        });
+    }
+
+    state.investments.activity.push({
+        id: makeId('ia'), holdingId: h.id, type, units, pricePerUnit: price,
+        amount, fee, date, note, txId, realizedPL
+    });
+    touchStreak();
+    saveData();
+    closeActivityModal();
+    renderInvestmentsView();
+    updateDashboard();
+    if (document.getElementById('view-transactions').classList.contains('active')) renderTransactionsList();
+    showToast(`${type[0].toUpperCase() + type.slice(1)} recorded`, 'success');
+});
+
+// --- Subscription detection (derived, read-only) ---
+function detectSubscriptions() {
+    const norm = (s) => s.toLowerCase().replace(/[0-9]+/g, '').replace(/\s+/g, ' ').trim();
+    const groups = {};
+    state.transactions.filter(t => t.type === 'expense').forEach(t => {
+        const key = norm(t.title || '');
+        if (!key) return;
+        (groups[key] = groups[key] || []).push(t);
+    });
+    const subs = [];
+    Object.values(groups).forEach(txs => {
+        const months = new Set(txs.map(t => (t.date || '').slice(0, 7)));
+        if (months.size < 2) return;
+        const amounts = txs.map(t => t.amount);
+        const mean = amounts.reduce((a, b) => a + b, 0) / amounts.length;
+        if (mean <= 0 || (Math.max(...amounts) - Math.min(...amounts)) / mean > 0.35) return;
+        const latest = txs.slice().sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+        subs.push({ title: latest.title, monthly: mean, count: txs.length, last: latest.date, categoryId: latest.categoryId });
+    });
+    return subs.sort((a, b) => b.monthly - a.monthly);
+}
+
+function renderSubscriptions() {
+    const box = document.getElementById('subscriptions-list');
+    if (!box) return;
+    const subs = detectSubscriptions();
+    if (subs.length === 0) {
+        box.innerHTML = placeholder('fa-rotate', 'No recurring charges spotted yet — they show up once a similar expense repeats across 2+ months.');
+        return;
+    }
+    const total = subs.reduce((s, x) => s + x.monthly, 0);
+    box.innerHTML = subs.map(s => {
+        const cat = catById(s.categoryId);
+        return `<div class="subscription-row">
+            <span class="subscription-icon" style="background:${cat.color}15;color:${cat.color}"><i class="${cat.icon}"></i></span>
+            <span class="subscription-name">${escapeHtml(s.title)}</span>
+            <span class="subscription-meta">${s.count}&times; &bull; last ${shortDate(s.last)}</span>
+            <span class="subscription-amount">${formatNaira(s.monthly)}/mo</span>
+        </div>`;
+    }).join('') + `<div class="subscription-total">≈ ${formatNaira(total)}/month &bull; ${formatNaira(total * 12)}/year on recurring charges</div>`;
+}
+
 // --- "Add" buttons on the new views ---
 document.getElementById('btn-add-income-source').addEventListener('click', () => openIncomeSourceModal());
 document.getElementById('btn-add-quick-add').addEventListener('click', () => openQuickAddModal());
 document.getElementById('btn-add-debt').addEventListener('click', () => openDebtModal());
+document.getElementById('btn-add-goal').addEventListener('click', () => openGoalModal());
+document.getElementById('btn-add-holding').addEventListener('click', () => openHoldingModal());
 
 // --- Mobile "More" menu + dashboard "Manage/View" shortcuts ---
 document.querySelectorAll('.more-menu-btn').forEach(btn => {
@@ -2040,7 +2931,8 @@ document.querySelectorAll('[data-goto]').forEach(btn => {
 });
 
 // --- Backdrop / Escape dismissal for the new modals ---
-const HABIT_MODALS = [incomeSourceModal, logPaymentModal, quickAddModal, debtModal, debtPaymentModal];
+const HABIT_MODALS = [incomeSourceModal, logPaymentModal, quickAddModal, debtModal, debtPaymentModal,
+    goalModal, contributeModal, fundGoalsModal, holdingModal, activityModal];
 HABIT_MODALS.forEach(m => {
     if (!m) return;
     m.addEventListener('click', (e) => {

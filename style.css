@@ -1204,11 +1204,22 @@ textarea:focus {
     font-size: 0.75rem;
     color: var(--text-secondary);
     font-style: italic;
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 70%;
+    white-space: nowrap;
 }
+
+.mobile-tx-card { min-width: 0; }
+.mobile-tx-card-row1 { gap: 0.75rem; }
+.mobile-tx-card-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.mobile-tx-card-amount { white-space: nowrap; flex-shrink: 0; }
+.mobile-tx-card-row2 { flex-wrap: wrap; gap: 0.35rem; }
+.mobile-tx-card-actions { display: inline-flex; gap: 0.25rem; flex-shrink: 0; }
 
 /* Categories Customizer UI view */
 .tabs-sub {
@@ -2142,4 +2153,233 @@ textarea:focus {
     .debt-card-actions .btn {
         flex: 1 1 auto;
     }
+}
+
+/* ==========================================================================
+   Milestone 2 — habit strip, goals, investments, lending, subscriptions
+   ========================================================================== */
+
+/* --- Today strip --- */
+.today-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.today-strip:empty { display: none; }
+
+.today-tile {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-glass);
+    border-left: 3px solid var(--text-muted);
+    border-radius: var(--border-radius-md);
+    padding: 0.9rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.today-tile.today-good { border-left-color: var(--color-success); }
+.today-tile.today-warn { border-left-color: var(--color-warning); }
+.today-tile.today-bad  { border-left-color: var(--color-danger); }
+
+.today-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+.today-value { font-size: 1.25rem; font-weight: 700; }
+.today-sub { font-size: 0.76rem; color: var(--text-secondary); }
+
+/* --- Dashboard goals widget --- */
+.goal-mini { margin-bottom: 0.8rem; }
+.goal-mini-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    margin-bottom: 0.35rem;
+    gap: 0.75rem;
+}
+.goal-mini-total { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.6rem; }
+
+/* --- Goals view --- */
+.goals-list, .holdings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.goal-card { padding: 1rem 1.15rem; }
+.goal-card.is-settled { opacity: 0.65; }
+
+.goal-card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.7rem;
+}
+
+.goal-card-icon {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    font-size: 1rem;
+}
+
+.goal-card-title { display: flex; flex-direction: column; flex: 1; }
+.goal-card-name { font-weight: 600; }
+.goal-card-meta { font-size: 0.76rem; color: var(--text-muted); }
+.goal-card-pct { font-weight: 700; }
+.goal-card-sub { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.45rem; }
+
+/* --- Fund-your-goals modal rows --- */
+.fund-goal-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.35rem 0.75rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border-glass);
+}
+.fund-goal-row:last-child { border-bottom: none; }
+.fund-goal-name { font-weight: 600; font-size: 0.9rem; }
+.fund-goal-meta { font-size: 0.76rem; color: var(--text-muted); grid-column: 1; }
+.fund-goal-row .input-prefix-wrapper { grid-column: 2; grid-row: 1 / span 2; }
+.fund-goal-input { width: 120px; }
+
+/* --- Debt widget: two sides + people rollup --- */
+.debt-side + .debt-side {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-glass);
+}
+
+.person-rollup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0.5rem 0 1.25rem;
+}
+
+.person-rollup-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--border-radius-sm);
+}
+
+.person-rollup-name { font-weight: 600; }
+.person-rollup-amount { font-weight: 600; font-size: 0.9rem; }
+.person-rollup-count { font-size: 0.75rem; color: var(--text-muted); margin-left: auto; }
+
+/* --- Investments widget --- */
+.invest-widget-value { font-size: 1.4rem; font-weight: 700; }
+.invest-widget-caption { font-size: 0.8rem; font-weight: 400; color: var(--text-muted); }
+.invest-widget-pl { font-size: 0.9rem; font-weight: 600; margin-top: 0.25rem; }
+
+/* --- Portfolio summary --- */
+.portfolio-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.portfolio-metrics > div { display: flex; flex-direction: column; gap: 0.15rem; }
+.pm-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
+.pm-value { font-weight: 700; }
+
+.portfolio-fx {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-glass);
+    font-size: 0.85rem;
+}
+
+.portfolio-fx .input-prefix-wrapper { max-width: 160px; }
+
+/* --- Holding cards --- */
+.holding-card { padding: 1rem 1.15rem; }
+
+.holding-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.holding-name { font-weight: 600; }
+.holding-ticker {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0.05rem 0.4rem;
+    border-radius: 5px;
+    margin-left: 0.35rem;
+}
+.holding-meta { display: block; font-size: 0.76rem; color: var(--text-muted); margin-top: 0.2rem; }
+.holding-value { text-align: right; font-weight: 700; white-space: nowrap; }
+.holding-value-naira { display: block; font-size: 0.76rem; font-weight: 400; color: var(--text-muted); }
+
+.holding-price-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+}
+
+.holding-price-input {
+    width: 110px;
+}
+
+.holding-pl { font-weight: 600; margin-left: auto; }
+
+/* --- 3-way toggle (buy / sell / dividend) --- */
+.type-selector-toggle.type-selector-3 { grid-template-columns: 1fr 1fr 1fr; }
+.type-selector-toggle input[value="dividend"]:checked + .toggle-btn {
+    background: var(--color-primary);
+    color: #fff;
+    box-shadow: 0 2px 8px var(--color-primary-glow);
+}
+
+/* --- Subscriptions --- */
+.subscriptions-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.subscription-row {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--border-glass);
+}
+.subscription-row:last-of-type { border-bottom: none; }
+
+.subscription-icon {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    font-size: 0.8rem;
+}
+
+.subscription-name { font-weight: 600; font-size: 0.9rem; }
+.subscription-meta { font-size: 0.75rem; color: var(--text-muted); }
+.subscription-amount { margin-left: auto; font-weight: 600; }
+.subscription-total { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.6rem; }
+
+@media (max-width: 600px) {
+    .goal-card-actions .btn,
+    .holding-card .debt-card-actions .btn { flex: 1 1 auto; }
+    .person-rollup-count { margin-left: 0; width: 100%; }
 }

@@ -54,7 +54,15 @@
                 </button>
                 <button class="nav-btn" data-tab="debts">
                     <i class="fa-solid fa-hand-holding-dollar"></i>
-                    <span>Debts</span>
+                    <span>Debts & Lending</span>
+                </button>
+                <button class="nav-btn" data-tab="goals">
+                    <i class="fa-solid fa-bullseye"></i>
+                    <span>Goals</span>
+                </button>
+                <button class="nav-btn" data-tab="investments">
+                    <i class="fa-solid fa-arrow-trend-up"></i>
+                    <span>Investments</span>
                 </button>
                 <button class="nav-btn" data-tab="categories">
                     <i class="fa-solid fa-tags"></i>
@@ -175,6 +183,9 @@
                 <!-- VIEW 1: DASHBOARD -->
                 <div id="view-dashboard" class="app-view active">
 
+                    <!-- Today strip: safe-to-spend, streak, insight -->
+                    <div class="today-strip" id="dashboard-today-strip"></div>
+
                     <!-- Habit row: quick add + payday -->
                     <div class="dashboard-grid">
                         <div class="glass-card flex-3 quick-add-widget">
@@ -216,6 +227,29 @@
                                 </button>
                             </div>
                             <div id="dashboard-debt-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Habit row: goals + investments -->
+                    <div class="dashboard-grid margin-top">
+                        <div class="glass-card flex-2 goals-widget">
+                            <div class="widget-header">
+                                <h2>Savings Goals</h2>
+                                <button class="btn btn-text btn-sm" data-goto="goals">
+                                    Manage <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div id="dashboard-goals-list"></div>
+                        </div>
+
+                        <div class="glass-card flex-3 investments-widget">
+                            <div class="widget-header">
+                                <h2>Investments</h2>
+                                <button class="btn btn-text btn-sm" data-goto="investments">
+                                    Manage <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div id="dashboard-invest-list"></div>
                         </div>
                     </div>
 
@@ -480,19 +514,61 @@
                         <p class="section-desc">One-tap tiles for routine spends like transport or data. They appear on your dashboard and the transactions screen.</p>
                         <div class="quick-adds-list" id="quick-adds-list"></div>
                     </div>
+
+                    <div class="glass-card margin-top">
+                        <div class="widget-header">
+                            <h2>Recurring Charges</h2>
+                            <span class="badge">Auto-detected</span>
+                        </div>
+                        <p class="section-desc">Expenses that repeat across months with a steady amount — likely subscriptions worth reviewing.</p>
+                        <div class="subscriptions-list" id="subscriptions-list"></div>
+                    </div>
                 </div>
 
-                <!-- VIEW: DEBTS -->
+                <!-- VIEW: DEBTS & LENDING -->
                 <div id="view-debts" class="app-view">
                     <div class="glass-card">
                         <div class="widget-header">
-                            <h2>Debt Tracker</h2>
+                            <h2>Debts &amp; Lending</h2>
                             <button class="btn btn-primary btn-sm" id="btn-add-debt">
                                 <i class="fa-solid fa-plus"></i> Add Debt
                             </button>
                         </div>
-                        <p class="section-desc">Track money you owe (or that's owed to you) and chip away at it. Record each payment and watch the balance fall to zero.</p>
+                        <p class="section-desc">Track money you owe and money you've lent out. Record each payment and watch the balance fall to zero.</p>
+                        <div id="debts-people-rollup"></div>
                         <div class="debts-list" id="debts-list"></div>
+                    </div>
+                </div>
+
+                <!-- VIEW: GOALS -->
+                <div id="view-goals" class="app-view">
+                    <div class="glass-card">
+                        <div class="widget-header">
+                            <h2>Savings Goals</h2>
+                            <button class="btn btn-primary btn-sm" id="btn-add-goal">
+                                <i class="fa-solid fa-plus"></i> New Goal
+                            </button>
+                        </div>
+                        <p class="section-desc">Sinking funds for the things you're saving toward — a certificate, an emergency fund, a big purchase. Contribute a bit at a time and watch it grow.</p>
+                        <div class="goals-list" id="goals-list"></div>
+                    </div>
+                </div>
+
+                <!-- VIEW: INVESTMENTS -->
+                <div id="view-investments" class="app-view">
+                    <div class="glass-card">
+                        <div class="widget-header">
+                            <h2>Portfolio</h2>
+                            <button class="btn btn-primary btn-sm" id="btn-add-holding">
+                                <i class="fa-solid fa-plus"></i> Add Holding
+                            </button>
+                        </div>
+                        <p class="section-desc">Track your stocks and funds. Update the current price yourself; the app works out value and return. USD holdings are converted with the ₦/$ rate you set.</p>
+                        <div id="portfolio-summary"></div>
+                    </div>
+                    <div class="glass-card margin-top">
+                        <div class="widget-header"><h2>Holdings</h2></div>
+                        <div class="holdings-list" id="holdings-list"></div>
                     </div>
                 </div>
 
@@ -509,7 +585,17 @@
                             </button>
                             <button class="more-menu-btn" data-tab="debts">
                                 <i class="fa-solid fa-hand-holding-dollar"></i>
-                                <span>Debts</span>
+                                <span>Debts &amp; Lending</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <button class="more-menu-btn" data-tab="goals">
+                                <i class="fa-solid fa-bullseye"></i>
+                                <span>Goals</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <button class="more-menu-btn" data-tab="investments">
+                                <i class="fa-solid fa-arrow-trend-up"></i>
+                                <span>Investments</span>
                                 <i class="fa-solid fa-chevron-right"></i>
                             </button>
                             <button class="more-menu-btn" data-tab="categories">
@@ -970,6 +1056,235 @@
                 <div class="modal-actions">
                     <button type="button" class="btn btn-outline" onclick="document.getElementById('debt-payment-modal').classList.remove('active')">Cancel</button>
                     <button type="submit" class="btn btn-primary">Record Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT GOAL -->
+    <div class="modal-overlay" id="goal-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2 id="goal-modal-title">New Goal</h2>
+                <button type="button" class="btn-close-modal" onclick="document.getElementById('goal-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="goal-form">
+                <div class="form-group">
+                    <label for="goal-name">Goal Name</label>
+                    <input type="text" id="goal-name" placeholder="e.g. AWS Certification, Emergency Fund" required>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="goal-target">Target Amount (₦)</label>
+                        <div class="input-prefix-wrapper">
+                            <span class="input-prefix">₦</span>
+                            <input type="number" id="goal-target" placeholder="0.00" min="0.01" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-date">Target Date <span class="label-hint">(optional)</span></label>
+                        <input type="date" id="goal-date">
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="goal-color">Colour</label>
+                        <div class="color-picker-container">
+                            <input type="color" id="goal-color" value="#8b5cf6">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-icon">Icon</label>
+                        <select id="goal-icon">
+                            <option value="fa-solid fa-bullseye">&#xf140; Target</option>
+                            <option value="fa-solid fa-graduation-cap">&#xf19d; Learning</option>
+                            <option value="fa-solid fa-shield-halved">&#xe64e; Safety net</option>
+                            <option value="fa-solid fa-house">&#xf015; Home</option>
+                            <option value="fa-solid fa-car">&#xf1b9; Vehicle</option>
+                            <option value="fa-solid fa-plane">&#xf072; Travel</option>
+                            <option value="fa-solid fa-laptop">&#xf109; Gadget</option>
+                            <option value="fa-solid fa-piggy-bank">&#xf4d3; Savings</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('goal-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Goal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CONTRIBUTE TO GOAL -->
+    <div class="modal-overlay" id="contribute-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2 id="contribute-title">Contribute</h2>
+                <button type="button" class="btn-close-modal" onclick="document.getElementById('contribute-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="contribute-form">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="contribute-amount">Amount (₦)</label>
+                        <div class="input-prefix-wrapper">
+                            <span class="input-prefix">₦</span>
+                            <input type="number" id="contribute-amount" placeholder="0.00" min="0.01" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="contribute-date">Date</label>
+                        <input type="date" id="contribute-date" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="contribute-note">Note (Optional)</label>
+                    <input type="text" id="contribute-note" placeholder="e.g. from side gig">
+                </div>
+                <label class="checkbox-row">
+                    <input type="checkbox" id="contribute-log-tx" checked>
+                    <span>Also log as an expense (Savings)</span>
+                </label>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('contribute-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Contribution</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: FUND YOUR GOALS (pay yourself first) -->
+    <div class="modal-overlay" id="fund-goals-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2>Pay yourself first</h2>
+                <button type="button" class="btn-close-modal" onclick="document.getElementById('fund-goals-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="fund-goals-form">
+                <p class="section-desc">You just logged some income. Move a little into your goals now? Leave a field blank to skip it.</p>
+                <div id="fund-goals-list"></div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('fund-goals-modal').classList.remove('active')">Not now</button>
+                    <button type="submit" class="btn btn-primary">Set Aside</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT HOLDING -->
+    <div class="modal-overlay" id="holding-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2 id="holding-modal-title">Add Holding</h2>
+                <button type="button" class="btn-close-modal" onclick="document.getElementById('holding-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="holding-form">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Currency</label>
+                        <div class="type-selector-toggle">
+                            <input type="radio" id="holding-ccy-ngn" name="holding-ccy" value="NGN" checked>
+                            <label for="holding-ccy-ngn" class="toggle-btn toggle-income">₦ NGN</label>
+                            <input type="radio" id="holding-ccy-usd" name="holding-ccy" value="USD">
+                            <label for="holding-ccy-usd" class="toggle-btn toggle-expense">$ USD</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="holding-account">Account / Platform</label>
+                        <input type="text" id="holding-account" placeholder="e.g. Bamboo, NGX">
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="holding-name">Name</label>
+                        <input type="text" id="holding-name" placeholder="e.g. MTN Nigeria" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="holding-ticker">Ticker <span class="label-hint">(optional)</span></label>
+                        <input type="text" id="holding-ticker" placeholder="e.g. MTNN">
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="holding-units">Units Held</label>
+                        <input type="number" id="holding-units" placeholder="0" min="0" step="any" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="holding-avgcost">Avg Cost / Unit</label>
+                        <input type="number" id="holding-avgcost" placeholder="0.00" min="0" step="any" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="holding-price">Current Price / Unit</label>
+                    <input type="number" id="holding-price" placeholder="defaults to avg cost" min="0" step="any">
+                </div>
+                <div class="form-group">
+                    <label for="holding-notes">Notes (Optional)</label>
+                    <textarea id="holding-notes" rows="2" placeholder="Thesis, plan, ..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('holding-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Holding</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: RECORD INVESTMENT ACTIVITY -->
+    <div class="modal-overlay" id="activity-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2 id="activity-modal-title">Record Activity</h2>
+                <button type="button" class="btn-close-modal" onclick="document.getElementById('activity-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="activity-form">
+                <div class="form-group">
+                    <label>Type</label>
+                    <div class="type-selector-toggle type-selector-3">
+                        <input type="radio" id="activity-type-buy" name="activity-type" value="buy" checked>
+                        <label for="activity-type-buy" class="toggle-btn toggle-income">Buy</label>
+                        <input type="radio" id="activity-type-sell" name="activity-type" value="sell">
+                        <label for="activity-type-sell" class="toggle-btn toggle-expense">Sell</label>
+                        <input type="radio" id="activity-type-div" name="activity-type" value="dividend">
+                        <label for="activity-type-div" class="toggle-btn">Dividend</label>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group" id="activity-units-group">
+                        <label for="activity-units">Units</label>
+                        <input type="number" id="activity-units" placeholder="0" min="0" step="any">
+                    </div>
+                    <div class="form-group" id="activity-price-group">
+                        <label for="activity-price">Price / Unit</label>
+                        <input type="number" id="activity-price" placeholder="0.00" min="0" step="any">
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="activity-fee">Fee <span class="label-hint">(optional)</span></label>
+                        <input type="number" id="activity-fee" placeholder="0.00" min="0" step="any">
+                    </div>
+                    <div class="form-group">
+                        <label for="activity-amount">Total Amount</label>
+                        <input type="number" id="activity-amount" placeholder="0.00" min="0" step="any" required>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="activity-date">Date</label>
+                        <input type="date" id="activity-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="activity-note">Note</label>
+                        <input type="text" id="activity-note" placeholder="Optional">
+                    </div>
+                </div>
+                <label class="checkbox-row">
+                    <input type="checkbox" id="activity-log-tx">
+                    <span id="activity-log-tx-label">Also log as a cash transaction</span>
+                </label>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('activity-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Record</button>
                 </div>
             </form>
         </div>
