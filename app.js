@@ -97,49 +97,60 @@ function loadSampleData() {
 }
 
 // --- App Layout Navigation ---
-const NAV_BUTTONS = document.querySelectorAll('.nav-btn');
+// Includes both the desktop sidebar buttons (.nav-btn) and the mobile bottom
+// nav bar (.mobile-nav-btn) so navigation works on every screen size.
+const NAV_BUTTONS = document.querySelectorAll('.nav-btn, .mobile-nav-btn');
 const VIEWS = document.querySelectorAll('.app-view');
 const PAGE_TITLE = document.getElementById('page-title');
 
-NAV_BUTTONS.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const targetTab = btn.getAttribute('data-tab');
-        if (!targetTab) return;
+const TAB_TITLES = {
+    dashboard: 'Dashboard',
+    transactions: 'Transactions',
+    categories: 'Categories & Budgets',
+    settings: 'Data Management'
+};
 
-        NAV_BUTTONS.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+function switchToTab(targetTab) {
+    if (!targetTab || !TAB_TITLES[targetTab]) return;
 
-        VIEWS.forEach(view => {
-            view.classList.remove('active');
-            if (view.id === `view-${targetTab}`) {
-                view.classList.add('active');
-            }
-        });
-
-        if (targetTab === 'dashboard') PAGE_TITLE.textContent = 'Dashboard';
-        else if (targetTab === 'transactions') PAGE_TITLE.textContent = 'Transactions';
-        else if (targetTab === 'categories') PAGE_TITLE.textContent = 'Categories & Budgets';
-        else if (targetTab === 'settings') PAGE_TITLE.textContent = 'Data Management';
-
-        if (targetTab === 'dashboard') {
-            updateDashboard();
-        } else if (targetTab === 'transactions') {
-            renderTransactionsList();
-            populateFilterCategories();
-        } else if (targetTab === 'categories') {
-            renderCategoriesManager();
-            renderBudgetsManager();
-            populateDropdowns();
-        }
+    NAV_BUTTONS.forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-tab') === targetTab);
     });
+
+    VIEWS.forEach(view => {
+        view.classList.toggle('active', view.id === `view-${targetTab}`);
+    });
+
+    PAGE_TITLE.textContent = TAB_TITLES[targetTab];
+
+    if (targetTab === 'dashboard') {
+        updateDashboard();
+    } else if (targetTab === 'transactions') {
+        renderTransactionsList();
+        populateFilterCategories();
+    } else if (targetTab === 'categories') {
+        renderCategoriesManager();
+        renderBudgetsManager();
+        populateDropdowns();
+    }
+}
+
+NAV_BUTTONS.forEach(btn => {
+    btn.addEventListener('click', () => switchToTab(btn.getAttribute('data-tab')));
 });
 
 // Shortcut button redirects
 document.getElementById('btn-view-all-transactions').addEventListener('click', () => {
-    document.querySelector('.nav-btn[data-tab="transactions"]').click();
+    switchToTab('transactions');
 });
 document.getElementById('btn-quick-manage-budgets').addEventListener('click', () => {
-    document.querySelector('.nav-btn[data-tab="categories"]').click();
+    switchToTab('categories');
+});
+
+// Dashboard month filter
+document.getElementById('dashboard-month-select').addEventListener('change', (e) => {
+    activeDashboardMonth = e.target.value;
+    updateDashboard();
 });
 
 // --- Date UI formatting ---
@@ -160,8 +171,54 @@ function formatNaira(amount) {
     return nairaFormatter.format(amount);
 }
 
+// --- Dashboard Month Filter ---
+// 'YYYY-MM' string for the month shown on the dashboard, or null for the current month.
+let activeDashboardMonth = null;
+
+function getActiveMonth() {
+    if (activeDashboardMonth) {
+        const [year, month] = activeDashboardMonth.split('-').map(Number);
+        return { year, month: month - 1 };
+    }
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() };
+}
+
+function monthKey(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function populateMonthSelector() {
+    const select = document.getElementById('dashboard-month-select');
+    if (!select) return;
+
+    const currentKey = monthKey(new Date());
+    const keys = new Set([currentKey]);
+    state.transactions.forEach(tx => {
+        const d = new Date(tx.date);
+        if (!isNaN(d)) keys.add(monthKey(d));
+    });
+
+    const sorted = [...keys].sort().reverse();
+    const desired = activeDashboardMonth || currentKey;
+
+    select.innerHTML = '';
+    sorted.forEach(key => {
+        const [year, month] = key.split('-').map(Number);
+        const label = new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = key === currentKey ? `${label} (Current)` : label;
+        select.appendChild(opt);
+    });
+
+    activeDashboardMonth = sorted.includes(desired) ? desired : currentKey;
+    select.value = activeDashboardMonth;
+}
+
 // --- Dynamic Visual Updates (Stats & Visualizations) ---
 function updateDashboard() {
+    populateMonthSelector();
     updateDashboardStats();
     renderRecentTransactions();
     renderDashboardBudgets();
@@ -170,9 +227,7 @@ function updateDashboard() {
 
 function updateDashboardStats() {
     const transactions = state.transactions;
-    const today = new Date();
-    const curYear = today.getFullYear();
-    const curMonth = today.getMonth();
+    const { year: curYear, month: curMonth } = getActiveMonth();
 
     // Filter current month transactions
     const curMonthTx = transactions.filter(tx => {
@@ -278,9 +333,7 @@ function renderDashboardBudgets() {
         return;
     }
 
-    const today = new Date();
-    const curYear = today.getFullYear();
-    const curMonth = today.getMonth();
+    const { year: curYear, month: curMonth } = getActiveMonth();
 
     activeBudgets.forEach(catId => {
         const cat = state.categories.find(c => c.id === catId);
@@ -328,9 +381,7 @@ function renderDashboardBudgets() {
 // --- Chart Rendering System ---
 function renderCharts() {
     const transactions = state.transactions;
-    const today = new Date();
-    const curYear = today.getFullYear();
-    const curMonth = today.getMonth();
+    const { year: curYear, month: curMonth } = getActiveMonth();
 
     // 1. Donut Chart Data: Category Breakdown (Expenses Only, Current Month)
     const curMonthExpenses = transactions.filter(tx => {
@@ -583,6 +634,9 @@ function renderTransactionsList() {
                 ${amountSign}${formatNaira(tx.amount)}
             </td>
             <td class="text-center">
+                <button class="btn-action btn-action-edit" onclick="editTransaction('${tx.id}')" title="Edit Transaction">
+                    <i class="fa-solid fa-pen"></i>
+                </button>
                 <button class="btn-action btn-action-delete" onclick="deleteTransaction('${tx.id}')" title="Delete Transaction">
                     <i class="fa-solid fa-trash-can"></i>
                 </button>
@@ -621,6 +675,11 @@ document.getElementById('tx-search').addEventListener('input', renderTransaction
 document.getElementById('filter-type').addEventListener('change', renderTransactionsList);
 document.getElementById('filter-category').addEventListener('change', renderTransactionsList);
 document.getElementById('filter-sort').addEventListener('change', renderTransactionsList);
+
+window.editTransaction = function(id) {
+    const tx = state.transactions.find(t => t.id === id);
+    if (tx) openTxModal(tx);
+};
 
 window.deleteTransaction = function(id) {
     if (confirm("Are you sure you want to delete this transaction?")) {
@@ -813,23 +872,42 @@ const openTxModalBtn = document.getElementById('open-add-transaction-modal');
 const closeTxModalBtn = document.getElementById('btn-close-tx-modal');
 const cancelTxModalBtn = document.getElementById('btn-cancel-tx');
 
-function openTxModal() {
-    document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
-    document.getElementById('tx-title').value = '';
-    document.getElementById('tx-amount').value = '';
-    document.getElementById('tx-notes').value = '';
-    document.getElementById('type-expense').checked = true;
-    toggleTxModalCategories();
+// Id of the transaction currently being edited, or null when adding a new one.
+let editingTxId = null;
+
+function openTxModal(tx = null) {
+    editingTxId = tx ? tx.id : null;
+    document.getElementById('modal-transaction-title').textContent = tx ? 'Edit Transaction' : 'Add Transaction';
+
+    if (tx) {
+        document.querySelector(`input[name="tx-type"][value="${tx.type}"]`).checked = true;
+        toggleTxModalCategories();
+        document.getElementById('tx-date').value = tx.date;
+        document.getElementById('tx-title').value = tx.title;
+        document.getElementById('tx-amount').value = tx.amount;
+        document.getElementById('tx-category').value = tx.categoryId;
+        document.getElementById('tx-notes').value = tx.notes || '';
+    } else {
+        document.getElementById('type-expense').checked = true;
+        toggleTxModalCategories();
+        document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('tx-title').value = '';
+        document.getElementById('tx-amount').value = '';
+        document.getElementById('tx-notes').value = '';
+    }
+
     txModal.classList.add('active');
 }
 
 function closeTxModal() {
     txModal.classList.remove('active');
+    editingTxId = null;
 }
 
-openTxModalBtn.addEventListener('click', openTxModal);
+openTxModalBtn.addEventListener('click', () => openTxModal());
 closeTxModalBtn.addEventListener('click', closeTxModal);
 cancelTxModalBtn.addEventListener('click', closeTxModal);
+document.getElementById('mobile-add-tx-btn').addEventListener('click', () => openTxModal());
 
 document.getElementById('transaction-form').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -846,23 +924,25 @@ document.getElementById('transaction-form').addEventListener('submit', (e) => {
         return;
     }
 
-    const txId = 'tx-' + Date.now() + Math.random().toString(36).substr(2, 4);
+    const wasEditing = Boolean(editingTxId);
 
-    const newTx = {
-        id: txId,
-        title,
-        type,
-        amount,
-        categoryId,
-        date,
-        notes
-    };
+    if (editingTxId) {
+        const existing = state.transactions.find(t => t.id === editingTxId);
+        if (existing) {
+            Object.assign(existing, { title, type, amount, categoryId, date, notes });
+        }
+    } else {
+        const txId = 'tx-' + Date.now() + Math.random().toString(36).slice(2, 6);
+        state.transactions.push({ id: txId, title, type, amount, categoryId, date, notes });
+    }
 
-    state.transactions.push(newTx);
     saveData();
     closeTxModal();
     updateDashboard();
-    showToast("Transaction saved successfully", "success");
+    if (document.getElementById('view-transactions').classList.contains('active')) {
+        renderTransactionsList();
+    }
+    showToast(wasEditing ? "Transaction updated successfully" : "Transaction saved successfully", "success");
 });
 
 // --- Category Actions: Create Modal & Form Handling ---
@@ -893,6 +973,22 @@ function closeCatModal() {
 openCatModalBtn.addEventListener('click', openCatModal);
 closeCatModalBtn.addEventListener('click', closeCatModal);
 cancelCatModalBtn.addEventListener('click', closeCatModal);
+
+// Dismiss any open modal by clicking its backdrop or pressing Escape.
+[txModal, catModal].forEach(overlay => {
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            overlay === txModal ? closeTxModal() : closeCatModal();
+        }
+    });
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        if (txModal.classList.contains('active')) closeTxModal();
+        if (catModal.classList.contains('active')) closeCatModal();
+    }
+});
 
 document.getElementById('category-form').addEventListener('submit', (e) => {
     e.preventDefault();

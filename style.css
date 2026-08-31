@@ -1106,6 +1106,10 @@ textarea:focus {
     color: var(--color-danger);
 }
 
+.btn-action-edit:hover {
+    color: var(--color-primary);
+}
+
 .empty-table-state {
     display: flex;
     flex-direction: column;
