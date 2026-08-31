@@ -9,13 +9,21 @@ browser's `localStorage`, so it can be hosted as static files (e.g. GitHub Pages
 - **Dashboard** — balance, income, expenses and savings-rate cards, an expenses-by-category
   doughnut chart, a 6-month income-vs-expenses bar chart, per-category budget progress,
   and a recent-transactions feed. A month selector switches the whole dashboard between
-  any month that has activity.
+  any month that has activity. Habit widgets: quick-add tiles, recurring-income due list,
+  needs-vs-wants split, and debt payoff.
 - **Transactions** — add, edit and delete income/expense entries; search, filter by
-  type/category and sort.
-- **Categories & Budgets** — create custom categories (colour + icon) and set monthly
-  spending limits per expense category, with safe/warning/danger thresholds.
+  type / category / need-vs-want and sort.
+- **Income & Recurring** — define recurring income (salary, NYSC allowance, …) with an
+  amount, cadence and optional end date, then log each payment with one tap when the
+  money lands. Plus one-tap **quick-add** buttons for routine spends like transport.
+- **Debts** — track money you owe (or that's owed to you), record partial payments, and
+  watch the balance fall to zero — payments can auto-post as transactions.
+- **Categories & Budgets** — create custom categories (colour + icon), tag each as a
+  **need** or a **want**, set monthly spending limits, and cap total "wants" spending
+  per month with safe / warning / danger alerts.
 - **Data & Backup** — export the full database to JSON, import a backup, or factory reset.
-- Responsive: desktop sidebar plus a mobile bottom-nav bar and floating add button.
+- Responsive: desktop sidebar plus a mobile bottom-nav bar (with a **More** menu),
+  floating add button, and bottom-sheet modals.
 
 ## Tech
 
