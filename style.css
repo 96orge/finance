@@ -1773,3 +1773,373 @@ textarea:focus {
 ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.15);
 }
+
+/* ==========================================================================
+   Habit tools — recurring income, quick-add, needs vs wants, debt tracking
+   ========================================================================== */
+
+.label-hint {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-size: 0.8em;
+}
+
+.subtle {
+    color: var(--text-muted);
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0.25rem 0 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.checkbox-row input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary);
+}
+
+.pill {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.pill-due { background: rgba(244, 63, 94, 0.15); color: var(--color-danger); }
+.pill-muted { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); }
+
+/* --- Priority (Need / Want) tags --- */
+.priority-pill {
+    display: inline-block;
+    margin-left: 0.4rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.priority-pill.priority-want {
+    background: rgba(245, 158, 11, 0.16);
+    color: var(--color-warning);
+}
+
+.priority-toggle {
+    margin-top: 0.5rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--border-glass);
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.priority-toggle.priority-need { color: var(--color-success); border-color: rgba(16, 185, 129, 0.4); }
+.priority-toggle.priority-want { color: var(--color-warning); border-color: rgba(245, 158, 11, 0.4); }
+.priority-toggle:hover { border-color: var(--border-glass-hover); }
+
+/* --- Quick-add tiles --- */
+.quick-add-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+}
+
+.quick-add-strip:empty { display: none; }
+
+.quick-add-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+    min-width: 120px;
+    flex: 1 1 120px;
+    max-width: 190px;
+    padding: 0.8rem 0.9rem;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-glass);
+    background: var(--bg-glass);
+    color: var(--text-primary);
+    font-family: inherit;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.quick-add-tile:hover {
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+}
+
+.quick-add-icon {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 0.9rem;
+}
+
+.quick-add-label { font-weight: 600; font-size: 0.9rem; }
+.quick-add-amount { font-size: 0.8rem; color: var(--text-secondary); }
+
+/* --- Recurring income (dashboard + manager) --- */
+.income-due-list,
+.income-sources-list,
+.quick-adds-list,
+.debts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.income-due-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-glass);
+}
+
+.income-due-item:last-child { border-bottom: none; }
+.income-due-info { display: flex; flex-direction: column; gap: 0.2rem; }
+.income-due-name { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+.income-due-sub { font-size: 0.78rem; color: var(--text-muted); }
+.income-due-action { display: flex; align-items: center; gap: 0.7rem; }
+.income-due-amount { font-weight: 600; color: var(--color-success); }
+
+.income-source-card {
+    padding: 1rem 1.15rem;
+}
+
+.income-source-card.is-complete { opacity: 0.6; }
+
+.income-source-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.income-source-icon {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+}
+
+.income-source-title { display: flex; flex-direction: column; flex: 1; }
+.income-source-name { font-weight: 600; }
+.income-source-meta { font-size: 0.78rem; color: var(--text-muted); }
+.income-source-amount { font-weight: 700; color: var(--color-success); }
+.income-source-sub { font-size: 0.82rem; color: var(--text-secondary); margin: 0.6rem 0; }
+.income-source-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+
+/* --- Quick-add manager rows --- */
+.quick-add-row {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border-glass);
+}
+
+.quick-add-row:last-child { border-bottom: none; }
+
+.quick-add-row-icon {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    font-size: 0.85rem;
+}
+
+.quick-add-row-label { font-weight: 600; }
+.quick-add-row-meta { font-size: 0.78rem; color: var(--text-muted); }
+.quick-add-row-amount { margin-left: auto; font-weight: 600; }
+
+/* --- Needs vs Wants --- */
+.nw-split-bar {
+    display: flex;
+    height: 14px;
+    border-radius: 999px;
+    overflow: hidden;
+    margin: 0.5rem 0 0.9rem;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.nw-seg { height: 100%; }
+.nw-seg.nw-need { background: var(--color-success); }
+.nw-seg.nw-want { background: var(--color-warning); }
+
+.nw-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.nw-dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    margin-right: 0.35rem;
+}
+
+.nw-dot.nw-need { background: var(--color-success); }
+.nw-dot.nw-want { background: var(--color-warning); }
+
+.nw-cap { margin-top: 1rem; }
+.nw-cap-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    margin-bottom: 0.4rem;
+}
+.nw-cap-msg { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.45rem; }
+
+/* --- Debt tracker --- */
+.debt-widget-total { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.9rem; }
+.debt-widget-total strong { color: var(--text-primary); }
+
+.debt-focus .debt-focus-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    margin-bottom: 0.4rem;
+    gap: 0.75rem;
+}
+
+.debt-focus button { margin-top: 0.75rem; }
+
+.debt-group + .debt-group { margin-top: 1.5rem; }
+
+.debt-group-title {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.debt-group-title span {
+    display: inline-block;
+    margin-left: 0.4rem;
+    padding: 0.05rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    font-size: 0.75rem;
+}
+
+.debt-card { padding: 1rem 1.15rem; }
+.debt-card.is-settled { opacity: 0.6; }
+
+.debt-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.6rem;
+}
+
+.debt-card-name { font-weight: 600; display: block; }
+.debt-card-party { font-size: 0.78rem; color: var(--text-muted); }
+.debt-card-remaining { font-weight: 700; white-space: nowrap; }
+.debt-card-sub { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.45rem; }
+.debt-card-notes { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.4rem; }
+
+.debt-history {
+    margin-top: 0.7rem;
+    font-size: 0.82rem;
+}
+
+.debt-history summary {
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+.debt-history ul {
+    list-style: none;
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.debt-history li {
+    display: flex;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.debt-hist-note { color: var(--text-muted); flex: 1; }
+
+.debt-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.9rem;
+}
+
+/* --- Mobile "More" menu --- */
+.more-menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: 1rem;
+}
+
+.more-menu-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-glass);
+    background: var(--bg-glass);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.more-menu-btn:hover { border-color: var(--color-primary); }
+.more-menu-btn span { flex: 1; text-align: left; }
+.more-menu-btn > i:last-child { color: var(--text-muted); font-size: 0.8rem; }
+
+@media (max-width: 600px) {
+    .income-due-item {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .income-due-action {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .quick-add-tile {
+        max-width: none;
+    }
+
+    .income-source-actions .btn,
+    .debt-card-actions .btn {
+        flex: 1 1 auto;
+    }
+}

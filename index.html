@@ -48,6 +48,14 @@
                     <i class="fa-solid fa-list-check"></i>
                     <span>Transactions</span>
                 </button>
+                <button class="nav-btn" data-tab="income">
+                    <i class="fa-solid fa-money-bill-trend-up"></i>
+                    <span>Income & Recurring</span>
+                </button>
+                <button class="nav-btn" data-tab="debts">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                    <span>Debts</span>
+                </button>
                 <button class="nav-btn" data-tab="categories">
                     <i class="fa-solid fa-tags"></i>
                     <span>Categories & Budgets</span>
@@ -166,7 +174,52 @@
                 
                 <!-- VIEW 1: DASHBOARD -->
                 <div id="view-dashboard" class="app-view active">
+
+                    <!-- Habit row: quick add + payday -->
                     <div class="dashboard-grid">
+                        <div class="glass-card flex-3 quick-add-widget">
+                            <div class="widget-header">
+                                <h2>Quick Add</h2>
+                                <button class="btn btn-text btn-sm" data-goto="income">
+                                    Manage <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="quick-add-strip" id="dashboard-quick-add"></div>
+                        </div>
+
+                        <div class="glass-card flex-2 recurring-income-widget">
+                            <div class="widget-header">
+                                <h2>Recurring Income</h2>
+                                <button class="btn btn-text btn-sm" data-goto="income">
+                                    View <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="income-due-list" id="dashboard-income-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Habit row: needs vs wants + debts -->
+                    <div class="dashboard-grid margin-top">
+                        <div class="glass-card flex-2 needs-wants-widget">
+                            <div class="widget-header">
+                                <h2>Needs vs Wants</h2>
+                                <span class="badge">This month</span>
+                            </div>
+                            <div id="dashboard-needs-wants"></div>
+                        </div>
+
+                        <div class="glass-card flex-3 debt-widget">
+                            <div class="widget-header">
+                                <h2>Debt Payoff</h2>
+                                <button class="btn btn-text btn-sm" data-goto="debts">
+                                    Manage <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div id="dashboard-debt-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid margin-top">
                         <!-- Chart Left: Category Breakdown -->
                         <div class="glass-card chart-card flex-2">
                             <div class="chart-header">
@@ -242,19 +295,30 @@
 
                 <!-- VIEW 2: TRANSACTIONS -->
                 <div id="view-transactions" class="app-view">
+                    <div class="quick-add-strip" id="transactions-quick-add" hidden></div>
+
                     <div class="glass-card filter-card">
                         <div class="filter-row">
                             <div class="filter-group search-group">
                                 <label for="tx-search"><i class="fa-solid fa-magnifying-glass"></i></label>
                                 <input type="text" id="tx-search" placeholder="Search by title, category, notes...">
                             </div>
-                            
+
                             <div class="filter-group">
                                 <label for="filter-type">Type</label>
                                 <select id="filter-type">
                                     <option value="all">All Types</option>
                                     <option value="income">Income</option>
                                     <option value="expense">Expense</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="filter-priority">Need / Want</label>
+                                <select id="filter-priority">
+                                    <option value="all">All Spending</option>
+                                    <option value="need">Needs only</option>
+                                    <option value="want">Wants only</option>
                                 </select>
                             </div>
 
@@ -374,6 +438,90 @@
                                     <p>No custom budget limits set yet.</p>
                                 </div>
                             </div>
+
+                            <hr class="card-divider">
+
+                            <h3>Monthly "Wants" Cap</h3>
+                            <p class="section-desc">Cap discretionary spending across every category tagged <strong>Want</strong>. Leave blank and save to turn it off.</p>
+                            <form id="wants-cap-form" class="budget-limit-form">
+                                <div class="form-group">
+                                    <label for="wants-cap-input">Wants budget for the month (₦)</label>
+                                    <div class="input-prefix-wrapper">
+                                        <span class="input-prefix">₦</span>
+                                        <input type="number" id="wants-cap-input" placeholder="0.00" min="0" step="0.01">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-full">Save Wants Cap</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: INCOME & RECURRING -->
+                <div id="view-income" class="app-view">
+                    <div class="glass-card">
+                        <div class="widget-header">
+                            <h2>Income Sources</h2>
+                            <button class="btn btn-primary btn-sm" id="btn-add-income-source">
+                                <i class="fa-solid fa-plus"></i> Add Income Source
+                            </button>
+                        </div>
+                        <p class="section-desc">Salary, NYSC allowance, or any steady inflow. Press <strong>Log Payment</strong> when the money actually lands and it's added to your income.</p>
+                        <div class="income-sources-list" id="income-sources-list"></div>
+                    </div>
+
+                    <div class="glass-card margin-top">
+                        <div class="widget-header">
+                            <h2>Quick Add Buttons</h2>
+                            <button class="btn btn-primary btn-sm" id="btn-add-quick-add">
+                                <i class="fa-solid fa-plus"></i> New Quick Add
+                            </button>
+                        </div>
+                        <p class="section-desc">One-tap tiles for routine spends like transport or data. They appear on your dashboard and the transactions screen.</p>
+                        <div class="quick-adds-list" id="quick-adds-list"></div>
+                    </div>
+                </div>
+
+                <!-- VIEW: DEBTS -->
+                <div id="view-debts" class="app-view">
+                    <div class="glass-card">
+                        <div class="widget-header">
+                            <h2>Debt Tracker</h2>
+                            <button class="btn btn-primary btn-sm" id="btn-add-debt">
+                                <i class="fa-solid fa-plus"></i> Add Debt
+                            </button>
+                        </div>
+                        <p class="section-desc">Track money you owe (or that's owed to you) and chip away at it. Record each payment and watch the balance fall to zero.</p>
+                        <div class="debts-list" id="debts-list"></div>
+                    </div>
+                </div>
+
+                <!-- VIEW: MORE (mobile menu) -->
+                <div id="view-more" class="app-view">
+                    <div class="glass-card">
+                        <h2>More</h2>
+                        <p class="section-desc">Everything that doesn't fit the bottom bar.</p>
+                        <div class="more-menu-list">
+                            <button class="more-menu-btn" data-tab="income">
+                                <i class="fa-solid fa-money-bill-trend-up"></i>
+                                <span>Income &amp; Recurring</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <button class="more-menu-btn" data-tab="debts">
+                                <i class="fa-solid fa-hand-holding-dollar"></i>
+                                <span>Debts</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <button class="more-menu-btn" data-tab="categories">
+                                <i class="fa-solid fa-tags"></i>
+                                <span>Categories &amp; Budgets</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <button class="more-menu-btn" data-tab="settings">
+                                <i class="fa-solid fa-sliders"></i>
+                                <span>Data &amp; Backup</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -390,7 +538,7 @@
                                     <i class="fa-solid fa-file-export"></i>
                                 </div>
                                 <h3>Backup Database</h3>
-                                <p>Download your transactions, custom categories, and budgets configurations as a JSON file.</p>
+                                <p>Download everything — transactions, categories, budgets, income sources, quick-adds and debts — as a JSON file.</p>
                                 <button class="btn btn-outline" id="btn-export-data">
                                     <i class="fa-solid fa-download"></i> Export Data
                                 </button>
@@ -413,7 +561,7 @@
                                     <i class="fa-solid fa-trash-can"></i>
                                 </div>
                                 <h3>Factory Reset</h3>
-                                <p>Permanently delete all transactions, custom categories, and budget limits, resetting to default values.</p>
+                                <p>Permanently delete all data — transactions, categories, budgets, income sources, quick-adds and debts — resetting to defaults.</p>
                                 <button class="btn btn-danger" id="btn-reset-data">
                                     <i class="fa-solid fa-triangle-exclamation"></i> Clear All Data
                                 </button>
@@ -450,9 +598,9 @@
             <i class="fa-solid fa-tags"></i>
             <span>Budgets</span>
         </button>
-        <button class="mobile-nav-btn" data-tab="settings">
-            <i class="fa-solid fa-sliders"></i>
-            <span>Settings</span>
+        <button class="mobile-nav-btn" data-tab="more">
+            <i class="fa-solid fa-ellipsis"></i>
+            <span>More</span>
         </button>
     </nav>
 
@@ -539,6 +687,17 @@
                     <input type="text" id="cat-name" placeholder="e.g. Gym, Subscriptions, Freelancing" required>
                 </div>
 
+                <div class="form-group" id="cat-priority-group">
+                    <label>Need or Want <span class="label-hint">(expense categories)</span></label>
+                    <div class="type-selector-toggle">
+                        <input type="radio" id="cat-priority-need" name="cat-priority" value="need" checked>
+                        <label for="cat-priority-need" class="toggle-btn toggle-income">Need</label>
+
+                        <input type="radio" id="cat-priority-want" name="cat-priority" value="want">
+                        <label for="cat-priority-want" class="toggle-btn toggle-expense">Want</label>
+                    </div>
+                </div>
+
                 <div class="form-row-2">
                     <div class="form-group">
                         <label for="cat-color">Theme Color</label>
@@ -571,6 +730,246 @@
                 <div class="modal-actions">
                     <button type="button" class="btn btn-outline" id="btn-cancel-cat">Cancel</button>
                     <button type="submit" class="btn btn-primary">Create Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT INCOME SOURCE -->
+    <div class="modal-overlay" id="income-source-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2 id="income-source-modal-title">Add Income Source</h2>
+                <button type="button" class="btn-close-modal" onclick="document.getElementById('income-source-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="income-source-form">
+                <div class="form-group">
+                    <label for="src-name">Name</label>
+                    <input type="text" id="src-name" placeholder="e.g. Monthly Salary, NYSC Allowance" required>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="src-amount">Expected Amount (₦)</label>
+                        <div class="input-prefix-wrapper">
+                            <span class="input-prefix">₦</span>
+                            <input type="number" id="src-amount" placeholder="0.00" min="0.01" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="src-category">Income Category</label>
+                        <select id="src-category" required></select>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="src-cadence">How often</label>
+                        <select id="src-cadence">
+                            <option value="monthly">Monthly</option>
+                            <option value="biweekly">Every 2 weeks</option>
+                            <option value="weekly">Weekly</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="src-start">Starts</label>
+                        <input type="date" id="src-start" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="src-end">Ends <span class="label-hint">(optional — e.g. end of NYSC year)</span></label>
+                    <input type="date" id="src-end">
+                </div>
+                <div class="form-group">
+                    <label for="src-notes">Notes (Optional)</label>
+                    <textarea id="src-notes" rows="2" placeholder="Anything worth remembering..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('income-source-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Source</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: LOG PAYMENT -->
+    <div class="modal-overlay" id="log-payment-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2 id="log-payment-title">Log Payment</h2>
+                <button type="button" class="btn-close-modal" onclick="document.getElementById('log-payment-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="log-payment-form">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="pay-amount">Amount Received (₦)</label>
+                        <div class="input-prefix-wrapper">
+                            <span class="input-prefix">₦</span>
+                            <input type="number" id="pay-amount" placeholder="0.00" min="0.01" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="pay-date">Date Received</label>
+                        <input type="date" id="pay-date" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="pay-note">Note (Optional)</label>
+                    <input type="text" id="pay-note" placeholder="e.g. arrived 3 days late">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('log-payment-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add to Income</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT QUICK ADD -->
+    <div class="modal-overlay" id="quick-add-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2 id="quick-add-modal-title">New Quick Add</h2>
+                <button type="button" class="btn-close-modal" onclick="document.getElementById('quick-add-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="quick-add-form">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label>Type</label>
+                        <div class="type-selector-toggle">
+                            <input type="radio" id="qa-type-expense" name="qa-type" value="expense" checked>
+                            <label for="qa-type-expense" class="toggle-btn toggle-expense">Expense</label>
+                            <input type="radio" id="qa-type-income" name="qa-type" value="income">
+                            <label for="qa-type-income" class="toggle-btn toggle-income">Income</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="qa-label">Button Label</label>
+                        <input type="text" id="qa-label" placeholder="e.g. Transport" required>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="qa-amount">Amount (₦)</label>
+                        <div class="input-prefix-wrapper">
+                            <span class="input-prefix">₦</span>
+                            <input type="number" id="qa-amount" placeholder="0.00" min="0.01" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="qa-category">Category</label>
+                        <select id="qa-category" required></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="qa-icon">Icon</label>
+                    <select id="qa-icon">
+                        <option value="fa-solid fa-bolt">&#xf0e7; Bolt</option>
+                        <option value="fa-solid fa-bus">&#xf207; Transport</option>
+                        <option value="fa-solid fa-wifi">&#xf1eb; Airtime / Data</option>
+                        <option value="fa-solid fa-bowl-food">&#xe4c6; Food</option>
+                        <option value="fa-solid fa-mug-hot">&#xf7b6; Drinks</option>
+                        <option value="fa-solid fa-cart-shopping">&#xf07a; Shopping</option>
+                        <option value="fa-solid fa-house">&#xf015; Home</option>
+                        <option value="fa-solid fa-graduation-cap">&#xf19d; Learning</option>
+                        <option value="fa-solid fa-gift">&#xf06b; Gift</option>
+                        <option value="fa-solid fa-circle-nodes">&#xf1e2; Other</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('quick-add-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Quick Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT DEBT -->
+    <div class="modal-overlay" id="debt-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2 id="debt-modal-title">Add Debt</h2>
+                <button type="button" class="btn-close-modal" onclick="document.getElementById('debt-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="debt-form">
+                <div class="form-group">
+                    <label>Direction</label>
+                    <div class="type-selector-toggle">
+                        <input type="radio" id="debt-kind-iowe" name="debt-kind" value="iOwe" checked>
+                        <label for="debt-kind-iowe" class="toggle-btn toggle-expense">I Owe</label>
+                        <input type="radio" id="debt-kind-owed" name="debt-kind" value="owedToMe">
+                        <label for="debt-kind-owed" class="toggle-btn toggle-income">Owed To Me</label>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="debt-name">What is it</label>
+                        <input type="text" id="debt-name" placeholder="e.g. Laptop loan" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="debt-counterparty">Person / Lender</label>
+                        <input type="text" id="debt-counterparty" placeholder="e.g. Chidi">
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="debt-amount">Original Amount (₦)</label>
+                        <div class="input-prefix-wrapper">
+                            <span class="input-prefix">₦</span>
+                            <input type="number" id="debt-amount" placeholder="0.00" min="0.01" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="debt-created">Date Taken</label>
+                        <input type="date" id="debt-created" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="debt-due">Due Date <span class="label-hint">(optional)</span></label>
+                    <input type="date" id="debt-due">
+                </div>
+                <div class="form-group">
+                    <label for="debt-notes">Notes (Optional)</label>
+                    <textarea id="debt-notes" rows="2" placeholder="What was it for..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('debt-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Debt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: RECORD DEBT PAYMENT -->
+    <div class="modal-overlay" id="debt-payment-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2 id="debt-payment-title">Record Payment</h2>
+                <button type="button" class="btn-close-modal" onclick="document.getElementById('debt-payment-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="debt-payment-form">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="dp-amount">Payment Amount (₦)</label>
+                        <div class="input-prefix-wrapper">
+                            <span class="input-prefix">₦</span>
+                            <input type="number" id="dp-amount" placeholder="0.00" min="0.01" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="dp-date">Date</label>
+                        <input type="date" id="dp-date" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="dp-note">Note (Optional)</label>
+                    <input type="text" id="dp-note" placeholder="e.g. second instalment">
+                </div>
+                <label class="checkbox-row">
+                    <input type="checkbox" id="dp-log-tx" checked>
+                    <span id="dp-log-tx-label">Also log as a transaction</span>
+                </label>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('debt-payment-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Record Payment</button>
                 </div>
             </form>
         </div>
