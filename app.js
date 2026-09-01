@@ -20,8 +20,52 @@ const DEFAULT_SETTINGS = {
     usdRate: null,           // ₦ per US$1 for valuing USD holdings; null = not set
     activityDays: [],        // ISO date strings the user logged something on (streak)
     primaryAccountId: null,  // default account for the transaction/account pickers
-    remindersDismissed: null // ISO date the reminders banner was last dismissed
+    remindersDismissed: null, // ISO date the reminders banner was last dismissed
+    theme: 'system'          // 'system' | 'light' | 'dark'
 };
+
+// --- Theme ---
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function applyTheme() {
+    const t = state.settings.theme;
+    const root = document.documentElement;
+    root.classList.add('theme-switching');
+    if (t === 'light' || t === 'dark') root.setAttribute('data-theme', t);
+    else root.removeAttribute('data-theme');
+    document.querySelectorAll('[data-theme-choice]').forEach(btn => {
+        btn.setAttribute('aria-pressed', String(btn.dataset.themeChoice === (t || 'system')));
+    });
+    requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theme-switching')));
+}
+
+window.setTheme = function(choice) {
+    state.settings.theme = choice;
+    saveData();
+    applyTheme();
+    updateDashboard(); // re-theme the charts
+};
+
+document.querySelectorAll('[data-theme-choice]').forEach(btn => {
+    btn.addEventListener('click', () => window.setTheme(btn.dataset.themeChoice));
+});
+
+// Read the resolved theme colours from CSS custom properties for Chart.js.
+function chartTheme() {
+    const cs = getComputedStyle(document.documentElement);
+    return {
+        text: cs.getPropertyValue('--text-secondary').trim() || '#94a3b8',
+        strong: cs.getPropertyValue('--text-primary').trim() || '#f8fafc',
+        grid: cs.getPropertyValue('--tint-2').trim() || 'rgba(148,163,184,0.15)'
+    };
+}
+
+// Copy title -> aria-label on icon-only buttons so screen readers announce them.
+function labelIconButtons(root) {
+    (root || document).querySelectorAll('button[title]:not([aria-label])').forEach(b => {
+        if (!b.textContent.trim()) b.setAttribute('aria-label', b.getAttribute('title'));
+    });
+}
 
 // Chart.js global instances
 let categoryChartInstance = null;
@@ -390,6 +434,10 @@ function switchToTab(targetTab) {
     } else if (targetTab === 'networth') {
         renderNetWorthView();
     }
+
+    if (typeof labelIconButtons === 'function') {
+        labelIconButtons(document.getElementById(`view-${targetTab}`) || document);
+    }
 }
 
 NAV_BUTTONS.forEach(btn => {
@@ -488,6 +536,7 @@ function updateDashboard() {
     renderRecentTransactions();
     renderDashboardBudgets();
     renderCharts();
+    if (typeof labelIconButtons === 'function') labelIconButtons(document.getElementById('view-dashboard'));
 }
 
 // Month income / expense totals for the active dashboard month.
@@ -678,6 +727,7 @@ function renderDashboardBudgets() {
 function renderCharts() {
     const transactions = state.transactions;
     const { year: curYear, month: curMonth } = getActiveMonth();
+    const ct = chartTheme();
 
     // 1. Donut Chart Data: Category Breakdown (Expenses Only, Current Month)
     const curMonthExpenses = transactions.filter(tx => {
@@ -732,7 +782,7 @@ function renderCharts() {
                     legend: {
                         position: 'right',
                         labels: {
-                            color: '#e2e8f0',
+                            color: ct.strong,
                             font: { family: 'Outfit', size: 12 },
                             usePointStyle: true,
                             padding: 12
@@ -752,6 +802,10 @@ function renderCharts() {
                 cutout: '75%'
             }
         });
+        const donutCanvas = document.getElementById('categoryDonutChart');
+        donutCanvas.setAttribute('role', 'img');
+        donutCanvas.setAttribute('aria-label',
+            'Expenses by category: ' + donutDataLabels.map((l, i) => `${l} ${formatNaira(donutDataValues[i])}`).join(', '));
     }
 
     // 2. Bar Chart: Last 6 Months (Income vs Expense Comparison)
@@ -836,18 +890,18 @@ function renderCharts() {
                 scales: {
                     x: {
                         grid: { display: false },
-                        ticks: { color: '#94a3b8', font: { family: 'Outfit', size: 11 } }
+                        ticks: { color: ct.text, font: { family: 'Outfit', size: 11 } }
                     },
                     y: {
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        ticks: { color: '#94a3b8', font: { family: 'Outfit', size: 11 } }
+                        grid: { color: ct.grid },
+                        ticks: { color: ct.text, font: { family: 'Outfit', size: 11 } }
                     }
                 },
                 plugins: {
                     legend: {
                         position: 'top',
                         labels: {
-                            color: '#e2e8f0',
+                            color: ct.strong,
                             font: { family: 'Outfit', size: 12 },
                             usePointStyle: true
                         }
@@ -855,6 +909,11 @@ function renderCharts() {
                 }
             }
         });
+        const trendCanvas = document.getElementById('monthlyTrendChart');
+        trendCanvas.setAttribute('role', 'img');
+        trendCanvas.setAttribute('aria-label',
+            'Income vs expenses over ' + barLabels.length + ' months. ' +
+            barLabels.map((l, i) => `${l}: income ${formatNaira(barIncome[i])}, expenses ${formatNaira(barExpense[i])}`).join('. '));
     }
 }
 
@@ -1053,7 +1112,8 @@ function renderCategoriesManager() {
         const priorityControl = cat.type === 'expense'
             ? `<button class="priority-toggle priority-${cat.priority === 'want' ? 'want' : 'need'}"
                        onclick="toggleCategoryPriority('${cat.id}')"
-                       title="Tap to switch between Need and Want">
+                       aria-pressed="${cat.priority === 'want'}"
+                       aria-label="${escapeHtml(cat.name)} is a ${cat.priority === 'want' ? 'want' : 'need'} — activate to switch">
                    ${cat.priority === 'want' ? 'Want' : 'Need'}
                </button>`
             : '';
@@ -1507,17 +1567,19 @@ function showToast(message, type = 'success') {
     if (type === 'warning') icon = 'fa-circle-exclamation';
 
     toast.innerHTML = `
-        <i class="fa-solid ${icon}"></i>
+        <i class="fa-solid ${icon}" aria-hidden="true"></i>
         <span>${escapeHtml(message)}</span>
     `;
 
     container.appendChild(toast);
 
     setTimeout(() => {
-        toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(10px)';
-        setTimeout(() => toast.remove(), 400);
+        if (!prefersReducedMotion) {
+            toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(10px)';
+        }
+        setTimeout(() => toast.remove(), prefersReducedMotion ? 0 : 400);
     }, 3500);
 }
 
@@ -2673,7 +2735,7 @@ function renderTodayStrip() {
         </div>`, `
         <div class="today-tile">
             <span class="today-label">Logging streak</span>
-            <span class="today-value">${streak.current === 0 ? '—' : `${streak.current}🔥`}</span>
+            <span class="today-value">${streak.current === 0 ? '—' : `${streak.current} <i class="fa-solid fa-fire" style="color:var(--color-warning)" aria-hidden="true"></i>`}</span>
             <span class="today-sub">${streak.current === 0 ? 'Log something today to start' : `Best run: ${streak.best} days`}</span>
         </div>`];
 
@@ -2950,7 +3012,7 @@ function renderInvestmentsWidget() {
     box.innerHTML = `
         <div class="invest-widget-value">${formatNaira(t.valueN)}<span class="invest-widget-caption"> portfolio value</span></div>
         <div class="invest-widget-pl ${up ? 'text-success' : 'text-danger'}">
-            ${up ? '▲' : '▼'} ${formatNaira(Math.abs(t.unrealized))} (${up ? '+' : ''}${plPct}%) unrealised
+            <i class="fa-solid fa-caret-${up ? 'up' : 'down'}" aria-hidden="true"></i> ${up ? '+' : '−'}${formatNaira(Math.abs(t.unrealized))} (${plPct}%) unrealised
         </div>
         ${t.missingRate ? `<div class="nw-cap-msg subtle">Set a ₦/$ rate on the Investments page to value USD holdings.</div>` : ''}
     `;
@@ -3503,7 +3565,7 @@ function renderReviewModal() {
         <ul class="review-list">
             ${s.topCats.length ? s.topCats.map(c => `
                 <li><span>${escapeHtml(catById(c.id).name)}</span>
-                    <span>${formatNaira(c.amt)}<span class="${c.delta > 0 ? 'text-danger' : 'text-success'}">${c.delta === 0 ? '' : (c.delta > 0 ? ' ▲ ' : ' ▼ ') + formatNaira(Math.abs(c.delta))}</span></span>
+                    <span>${formatNaira(c.amt)}<span class="${c.delta > 0 ? 'text-danger' : 'text-success'}">${c.delta === 0 ? '' : ` <i class="fa-solid fa-caret-${c.delta > 0 ? 'up' : 'down'}" aria-hidden="true"></i> ${c.delta > 0 ? '+' : '−'}${formatNaira(Math.abs(c.delta))}`}</span></span>
                 </li>`).join('') : '<li class="subtle">No spending recorded.</li>'}
         </ul>
         ${s.budgets.length ? `<p class="subtle">Kept ${kept} of ${s.budgets.length} budget${s.budgets.length > 1 ? 's' : ''}.</p>` : ''}
@@ -3628,12 +3690,71 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') HABIT_MODALS.forEach(m => m && m.classList.remove('active'));
 });
 
+// --- Modal accessibility: dialog semantics + focus trap + focus restore ---
+let modalA11yInstalled = false;
+function installModalA11y() {
+    if (modalA11yInstalled) return;
+    modalA11yInstalled = true;
+    const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    let lastTrigger = null;
+    let trapHandler = null;
+
+    function focusables(modal) {
+        return [...modal.querySelectorAll(FOCUSABLE)].filter(el => el.offsetParent !== null || el === document.activeElement);
+    }
+
+    function openModal(modal) {
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        const h = modal.querySelector('h2');
+        if (h) {
+            if (!h.id) h.id = (modal.id || 'modal') + '-title';
+            modal.setAttribute('aria-labelledby', h.id);
+        }
+        lastTrigger = document.activeElement;
+        const f = focusables(modal);
+        const firstField = f.find(el => !el.classList.contains('btn-close-modal'));
+        (firstField || f[0] || modal).focus();
+
+        trapHandler = (e) => {
+            if (e.key !== 'Tab') return;
+            const items = focusables(modal);
+            if (items.length === 0) { e.preventDefault(); return; }
+            const first = items[0], last = items[items.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        };
+        modal.addEventListener('keydown', trapHandler);
+    }
+
+    function closeModal(modal) {
+        if (trapHandler) modal.removeEventListener('keydown', trapHandler);
+        trapHandler = null;
+        if (lastTrigger && typeof lastTrigger.focus === 'function') lastTrigger.focus();
+        lastTrigger = null;
+    }
+
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        let wasActive = modal.classList.contains('active');
+        new MutationObserver(() => {
+            const now = modal.classList.contains('active');
+            if (now === wasActive) return;
+            wasActive = now;
+            if (now) openModal(modal); else closeModal(modal);
+        }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+    });
+}
+
 // --- App Bootstrap ---
 window.addEventListener('DOMContentLoaded', () => {
     updateDateDisplay();
     loadData();
+    applyTheme();
+    if (prefersReducedMotion && window.Chart) Chart.defaults.animation = false;
     snapshotNetWorth();
     saveData();
     populateDropdowns();
     updateDashboard();
+    labelIconButtons(document);
+    installModalA11y();
 });

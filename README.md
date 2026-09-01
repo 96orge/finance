@@ -35,8 +35,13 @@ browser's `localStorage`, so it can be hosted as static files (e.g. GitHub Pages
   spending limits, and a monthly "wants" cap with safe / warning / danger alerts.
 - **Data & Backup** — export everything to JSON or transactions / investment activity to
   **CSV**, import a backup, or factory reset.
+- **Light / dark theme** — Auto (follows your OS), Light or Dark, chosen from the sidebar
+  (or the mobile *More* menu) and remembered.
 - Responsive: desktop sidebar plus a mobile bottom-nav bar (with a **More** menu),
   floating add button, and bottom-sheet modals.
+- **Accessible** — visible keyboard focus, labelled controls, `role="dialog"` modals with
+  a focus trap, `prefers-reduced-motion` support, AA colour contrast, and zoom left
+  enabled.
 
 ## Tech
 

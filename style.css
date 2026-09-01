@@ -1,20 +1,34 @@
-/* Design Tokens and Theme Variables */
+/* Design Tokens and Theme Variables
+   ---------------------------------------------------------------------------
+   :root holds the DARK palette (the app's default identity). Light overrides
+   come from the OS preference (when no explicit choice is stamped) and from
+   an explicit data-theme on <html>. Every colour is a semantic token so both
+   themes stay in sync. */
 :root {
+    /* Surfaces & text (dark) */
     --bg-primary: #0b0f19;
     --bg-secondary: #131a2e;
     --bg-glass: rgba(19, 26, 46, 0.65);
-    --border-glass: rgba(255, 255, 255, 0.08);
-    --border-glass-hover: rgba(255, 255, 255, 0.15);
+    --border-glass: rgba(255, 255, 255, 0.09);
+    --border-glass-hover: rgba(255, 255, 255, 0.16);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     --glass-blur: blur(16px);
 
     --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
+    --text-secondary: #a4b1c4;   /* >=4.5:1 on --bg-primary */
+    --text-muted: #8b98ab;       /* >=4.5:1 on --bg-primary */
 
+    /* Neutral tints layered over the background (theme-flipped for light) */
+    --tint-1: var(--tint-1);
+    --tint-2: var(--tint-2);
+    --tint-3: rgba(255, 255, 255, 0.11);
+    --scrim: rgba(3, 6, 12, 0.66);
+
+    /* Brand / status */
     --color-primary: #8b5cf6;
     --color-primary-hover: #7c3aed;
     --color-primary-glow: rgba(139, 92, 246, 0.3);
+    --on-accent: #ffffff;
 
     --color-success: #10b981;
     --color-success-hover: #059669;
@@ -27,6 +41,25 @@
     --color-warning: #f59e0b;
     --color-warning-hover: #d97706;
 
+    --focus-ring: #c4b5fd;       /* >=3:1 vs both themes' surfaces */
+
+    /* Type & spacing scales */
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-md: 1.125rem;
+    --text-lg: 1.5rem;
+    --text-xl: 2rem;
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-8: 48px;
+    --space-12: 64px;
+
     --font-main: 'Outfit', sans-serif;
     --sidebar-width: 260px;
     --transition-fast: 0.2s ease;
@@ -34,6 +67,67 @@
     --border-radius-sm: 8px;
     --border-radius-md: 16px;
     --border-radius-lg: 24px;
+
+    color-scheme: dark;
+}
+
+/* Light palette — applied when the OS prefers light (and the user hasn't forced
+   dark), or when the user explicitly chooses light. */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+        --bg-primary: #f4f6fb;
+        --bg-secondary: #ffffff;
+        --bg-glass: rgba(255, 255, 255, 0.78);
+        --border-glass: rgba(15, 23, 42, 0.12);
+        --border-glass-hover: rgba(15, 23, 42, 0.22);
+        --glass-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+        --text-primary: #17233b;
+        --text-secondary: #46566e;
+        --text-muted: #5b6a7d;
+        --tint-1: rgba(15, 23, 42, 0.035);
+        --tint-2: rgba(15, 23, 42, 0.06);
+        --tint-3: rgba(15, 23, 42, 0.11);
+        --scrim: rgba(15, 23, 42, 0.45);
+        --color-primary: #7c3aed;
+        --color-primary-hover: #6d28d9;
+        --color-primary-glow: rgba(124, 58, 237, 0.25);
+        --focus-ring: #6d28d9;
+        color-scheme: light;
+    }
+}
+
+:root[data-theme="light"] {
+    --bg-primary: #f4f6fb;
+    --bg-secondary: #ffffff;
+    --bg-glass: rgba(255, 255, 255, 0.78);
+    --border-glass: rgba(15, 23, 42, 0.12);
+    --border-glass-hover: rgba(15, 23, 42, 0.22);
+    --glass-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+    --text-primary: #17233b;
+    --text-secondary: #46566e;
+    --text-muted: #5b6a7d;
+    --tint-1: rgba(15, 23, 42, 0.035);
+    --tint-2: rgba(15, 23, 42, 0.06);
+    --tint-3: rgba(15, 23, 42, 0.11);
+    --scrim: rgba(15, 23, 42, 0.45);
+    --color-primary: #7c3aed;
+    --color-primary-hover: #6d28d9;
+    --color-primary-glow: rgba(124, 58, 237, 0.25);
+    --focus-ring: #6d28d9;
+    color-scheme: light;
+}
+
+/* Re-assert dark when explicitly chosen (wins over the OS-light media query). */
+:root[data-theme="dark"] {
+    color-scheme: dark;
+}
+
+/* Suppress every transition for one frame while the theme flips, so switching
+   is instant rather than a slow cross-fade of every surface. */
+:root.theme-switching *,
+:root.theme-switching *::before,
+:root.theme-switching *::after {
+    transition: none !important;
 }
 
 /* Reset and Core Styles */
@@ -52,17 +146,69 @@ body {
     min-height: 100vh;
 }
 
-/* Background Glowing Accents */
+html { overflow-x: clip; }
+
+/* Background Glowing Accents — fixed so they never widen the scroll area. */
 body::before, body::after {
     content: '';
-    position: absolute;
+    position: fixed;
     width: 35vw;
     height: 35vw;
+    max-width: 480px;
+    max-height: 480px;
     border-radius: 50%;
     z-index: -1;
     filter: blur(120px);
     opacity: 0.12;
     pointer-events: none;
+}
+
+:root[data-theme="light"] body::before,
+:root[data-theme="light"] body::after { opacity: 0.16; }
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) body::before,
+    :root:not([data-theme="dark"]) body::after { opacity: 0.16; }
+}
+
+/* --- Accessibility primitives --- */
+:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: 3px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+.sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+.sr-only-focusable:focus,
+.sr-only-focusable:focus-visible {
+    position: fixed;
+    top: var(--space-2);
+    left: var(--space-2);
+    width: auto; height: auto;
+    padding: var(--space-2) var(--space-4);
+    margin: 0;
+    clip: auto;
+    background: var(--color-primary);
+    color: var(--on-accent);
+    border-radius: var(--border-radius-sm);
+    z-index: 2000;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
 
 body::before {
@@ -95,7 +241,7 @@ body::after {
     border-bottom: 1px solid var(--border-glass);
     position: sticky;
     top: 0;
-    width: 100vw;
+    width: 100%;
     z-index: 100;
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
@@ -122,15 +268,16 @@ body::after {
     font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: -0.5px;
-    background: linear-gradient(to right, #ffffff, #c084fc);
+    background: linear-gradient(to right, var(--color-primary), #c084fc);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .mobile-avatar {
     width: 32px;
     height: 32px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--tint-2);
     border: 1px solid var(--border-glass);
     border-radius: 50%;
     display: flex;
@@ -152,7 +299,7 @@ body::after {
     position: fixed;
     height: 100vh;
     z-index: 100;
-    transition: var(--transition-normal);
+    transition: transform var(--transition-normal);
 }
 
 .sidebar-brand {
@@ -179,8 +326,9 @@ body::after {
     font-size: 1.35rem;
     font-weight: 700;
     letter-spacing: -0.5px;
-    background: linear-gradient(to right, #ffffff, #c084fc);
+    background: linear-gradient(to right, var(--color-primary), #c084fc);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -216,8 +364,8 @@ body::after {
 
 .nav-btn:hover {
     color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.03);
+    background: var(--tint-1);
+    border-color: var(--tint-1);
 }
 
 .nav-btn.active {
@@ -250,7 +398,7 @@ body::after {
 .avatar {
     width: 38px;
     height: 38px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--tint-2);
     border: 1px solid var(--border-glass);
     border-radius: 50%;
     display: flex;
@@ -282,7 +430,6 @@ body::after {
     flex-grow: 1;
     min-height: 100vh;
     padding: 2.5rem 3rem;
-    transition: var(--transition-normal);
 }
 
 /* Header Component */
@@ -297,9 +444,7 @@ body::after {
     font-size: 2.25rem;
     font-weight: 800;
     letter-spacing: -0.75px;
-    background: linear-gradient(180deg, #ffffff 50%, var(--text-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
 }
 
 .header-sub-row {
@@ -321,7 +466,7 @@ body::after {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--tint-2);
     border: 1px solid var(--border-glass);
     padding: 0.25rem 0.6rem;
     border-radius: var(--border-radius-sm);
@@ -344,7 +489,6 @@ body::after {
     font-family: var(--font-main);
     font-size: 0.8rem;
     font-weight: 600;
-    outline: none;
     cursor: pointer;
     padding-right: 0.25rem;
 }
@@ -418,7 +562,7 @@ body::after {
     align-items: center;
     justify-content: center;
     font-size: 0.95rem;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--tint-2);
     border: 1px solid var(--border-glass);
 }
 
@@ -455,7 +599,7 @@ body::after {
 .savings-progress-track {
     width: 100%;
     height: 6px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--tint-2);
     border-radius: 3px;
     overflow: hidden;
     margin-top: 0.5rem;
@@ -622,7 +766,7 @@ body::after {
 .budget-progress-track {
     width: 100%;
     height: 8px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--tint-2);
     border-radius: 4px;
     overflow: hidden;
 }
@@ -668,15 +812,15 @@ body::after {
     align-items: center;
     justify-content: space-between;
     padding: 0.65rem 0.85rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--tint-1);
     border: 1px solid var(--border-glass);
     border-radius: var(--border-radius-sm);
     transition: var(--transition-fast);
 }
 
 .recent-item:hover {
-    background: rgba(255, 255, 255, 0.04);
-    border-color: rgba(255, 255, 255, 0.12);
+    background: var(--tint-2);
+    border-color: var(--tint-3);
 }
 
 .recent-item-left {
@@ -740,14 +884,13 @@ input[type="number"],
 input[type="date"],
 select,
 textarea {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--tint-1);
     border: 1px solid var(--border-glass);
     padding: 0.75rem 1rem;
     border-radius: var(--border-radius-sm);
     color: var(--text-primary);
     font-family: var(--font-main);
-    font-size: 0.95rem;
-    outline: none;
+    font-size: 1rem; /* >=16px avoids iOS zoom-on-focus */
     transition: var(--transition-fast);
 }
 
@@ -758,7 +901,7 @@ select:focus,
 textarea:focus {
     border-color: var(--color-primary);
     box-shadow: 0 0 0 3px var(--color-primary-glow);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--tint-2);
 }
 
 .input-prefix-wrapper {
@@ -813,7 +956,7 @@ textarea:focus {
 }
 
 .btn-outline:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--tint-1);
     border-color: var(--text-secondary);
 }
 
@@ -856,8 +999,8 @@ textarea:focus {
     top: 0;
     left: 0;
     width: 100vw;
-    height: 100vh;
-    background: rgba(5, 7, 12, 0.75);
+    height: 100dvh;
+    background: var(--scrim);
     backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
@@ -904,8 +1047,8 @@ textarea:focus {
     font-size: 1.25rem;
     color: var(--text-secondary);
     cursor: pointer;
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -914,7 +1057,7 @@ textarea:focus {
 }
 
 .btn-close-modal:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--tint-2);
     color: var(--text-primary);
 }
 
@@ -929,7 +1072,7 @@ textarea:focus {
 .type-selector-toggle {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--tint-1);
     border: 1px solid var(--border-glass);
     padding: 4px;
     border-radius: var(--border-radius-sm);
@@ -1082,7 +1225,7 @@ textarea:focus {
 }
 
 .transaction-table tbody tr:hover td {
-    background: rgba(255, 255, 255, 0.015);
+    background: var(--tint-1);
 }
 
 .text-right { text-align: right; }
@@ -1093,13 +1236,16 @@ textarea:focus {
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    padding: 0.35rem;
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-grid;
+    place-items: center;
     border-radius: var(--border-radius-sm);
     transition: var(--transition-fast);
 }
 
 .btn-action:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--tint-2);
 }
 
 .btn-action-delete:hover {
@@ -1143,7 +1289,7 @@ textarea:focus {
 }
 
 .mobile-tx-card {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--tint-1);
     border: 1px solid var(--border-glass);
     border-radius: var(--border-radius-md);
     padding: 1rem 1.15rem;
@@ -1155,7 +1301,7 @@ textarea:focus {
 }
 
 .mobile-tx-card:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--tint-1);
     border-color: var(--border-glass-hover);
 }
 
@@ -1190,7 +1336,7 @@ textarea:focus {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-top: 1px solid var(--tint-2);
     padding-top: 0.5rem;
     margin-top: 0.25rem;
 }
@@ -1280,7 +1426,7 @@ textarea:focus {
 }
 
 .category-manager-card {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--tint-1);
     border: 1px solid var(--border-glass);
     border-radius: var(--border-radius-md);
     padding: 1.15rem;
@@ -1294,7 +1440,7 @@ textarea:focus {
 }
 
 .category-manager-card:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--tint-2);
     border-color: var(--border-glass-hover);
     transform: translateY(-2px);
 }
@@ -1325,22 +1471,22 @@ textarea:focus {
 }
 
 .btn-card-action {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--tint-1);
     border: 1px solid var(--border-glass);
     color: var(--text-secondary);
-    width: 28px;
-    height: 28px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: var(--transition-fast);
 }
 
 .btn-card-action:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--tint-3);
     color: var(--text-primary);
 }
 
@@ -1371,7 +1517,7 @@ textarea:focus {
     align-items: center;
     justify-content: space-between;
     padding: 0.65rem 0.85rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--tint-1);
     border: 1px solid var(--border-glass);
     border-radius: var(--border-radius-sm);
 }
@@ -1395,7 +1541,7 @@ textarea:focus {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--tint-1);
     border: 1px solid var(--border-glass);
     padding: 0.45rem;
     border-radius: var(--border-radius-sm);
@@ -1429,7 +1575,7 @@ textarea:focus {
 }
 
 .settings-option-card {
-    background: rgba(255, 255, 255, 0.015);
+    background: var(--tint-1);
     border: 1px solid var(--border-glass);
     border-radius: var(--border-radius-md);
     padding: 1.75rem;
@@ -1442,8 +1588,8 @@ textarea:focus {
 }
 
 .settings-option-card:hover {
-    border-color: rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.03);
+    border-color: var(--tint-3);
+    background: var(--tint-1);
 }
 
 .option-icon {
@@ -1569,8 +1715,9 @@ textarea:focus {
     position: fixed;
     bottom: 0;
     left: 0;
-    width: 100vw;
-    background: rgba(11, 15, 25, 0.88);
+    right: 0;
+    width: auto;
+    background: var(--bg-glass);
     backdrop-filter: var(--glass-blur);
     border-top: 1px solid var(--border-glass);
     grid-template-columns: repeat(4, 1fr);
@@ -1777,12 +1924,12 @@ textarea:focus {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--tint-3);
     border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--tint-3);
 }
 
 /* ==========================================================================
@@ -1824,7 +1971,7 @@ textarea:focus {
 }
 
 .pill-due { background: rgba(244, 63, 94, 0.15); color: var(--color-danger); }
-.pill-muted { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); }
+.pill-muted { background: var(--tint-2); color: var(--text-muted); }
 
 /* --- Priority (Need / Want) tags --- */
 .priority-pill {
@@ -1988,7 +2135,7 @@ textarea:focus {
     border-radius: 999px;
     overflow: hidden;
     margin: 0.5rem 0 0.9rem;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--tint-2);
 }
 
 .nw-seg { height: 100%; }
@@ -2050,7 +2197,7 @@ textarea:focus {
     margin-left: 0.4rem;
     padding: 0.05rem 0.5rem;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--tint-2);
     font-size: 0.75rem;
 }
 
@@ -2266,7 +2413,7 @@ textarea:focus {
     gap: 0.6rem;
     flex-wrap: wrap;
     padding: 0.5rem 0.75rem;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--tint-1);
     border: 1px solid var(--border-glass);
     border-radius: var(--border-radius-sm);
 }
@@ -2320,7 +2467,7 @@ textarea:focus {
     font-size: 0.72rem;
     font-weight: 700;
     color: var(--text-muted);
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--tint-2);
     padding: 0.05rem 0.4rem;
     border-radius: 5px;
     margin-left: 0.35rem;
@@ -2411,11 +2558,13 @@ textarea:focus {
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
     border-radius: var(--border-radius-sm);
 }
-.reminders-dismiss:hover { background: rgba(255, 255, 255, 0.06); color: var(--text-primary); }
+.reminders-dismiss:hover { background: var(--tint-2); color: var(--text-primary); }
 
 .reminders-list {
     list-style: none;
@@ -2431,10 +2580,10 @@ textarea:focus {
     align-items: center;
     gap: 0.6rem;
     padding: 0.55rem 0.65rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--tint-1);
     border: 1px solid var(--border-glass);
     border-radius: var(--border-radius-sm);
-    color: var(--text-secondary);
+    color: var(--text-primary);
     font: inherit;
     font-size: 0.85rem;
     text-align: left;
@@ -2571,3 +2720,43 @@ textarea:focus {
     .account-actions .btn { flex: 1 1 auto; }
     .nw-total-value { font-size: 1.6rem; }
 }
+
+/* ==========================================================================
+   Milestone 4 — theme toggle
+   ========================================================================== */
+
+.theme-toggle {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    padding: 3px;
+    margin-bottom: var(--space-3);
+    background: var(--tint-1);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--border-radius-sm);
+}
+
+.theme-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font: 600 var(--text-xs)/1 var(--font-main);
+    padding: var(--space-2) 0;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: var(--transition-fast);
+}
+
+.theme-toggle button:hover { color: var(--text-primary); }
+
+.theme-toggle button[aria-pressed="true"] {
+    background: var(--color-primary);
+    color: var(--on-accent);
+}
+
+/* More-menu variant sits on its own row */
+.more-menu-list .theme-toggle { margin: var(--space-2) 0 0; }
