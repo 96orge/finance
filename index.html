@@ -948,9 +948,15 @@
                         <input type="date" id="src-start" required>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="src-end">Ends <span class="label-hint">(optional — e.g. end of NYSC year)</span></label>
-                    <input type="date" id="src-end">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="src-end">Ends <span class="label-hint">(optional — e.g. end of NYSC year)</span></label>
+                        <input type="date" id="src-end">
+                    </div>
+                    <div class="form-group" data-account-field hidden>
+                        <label for="src-account">Paid into</label>
+                        <select id="src-account"></select>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="src-notes">Notes (Optional)</label>
