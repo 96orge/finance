@@ -64,6 +64,10 @@
                     <i class="fa-solid fa-arrow-trend-up"></i>
                     <span>Investments</span>
                 </button>
+                <button class="nav-btn" data-tab="networth">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                    <span>Net Worth</span>
+                </button>
                 <button class="nav-btn" data-tab="categories">
                     <i class="fa-solid fa-tags"></i>
                     <span>Categories & Budgets</span>
@@ -112,10 +116,10 @@
 
             <!-- Stats Bar -->
             <section class="stats-grid">
-                <!-- Card 1: Balance -->
+                <!-- Card 1: Net Worth -->
                 <div class="stat-card glass-card card-balance">
                     <div class="card-header">
-                        <span class="card-label">Total Balance</span>
+                        <span class="card-label">Net Worth</span>
                         <div class="card-icon balance-icon">
                             <i class="fa-solid fa-scale-balanced"></i>
                         </div>
@@ -183,10 +187,19 @@
                 <!-- VIEW 1: DASHBOARD -->
                 <div id="view-dashboard" class="app-view active">
 
-                    <!-- Today strip: safe-to-spend, streak, insight -->
+                    <!-- Reminders / attention banner -->
+                    <div class="reminders-banner" id="reminders-banner" role="status" hidden></div>
+
+                    <!-- Today strip: safe-to-spend, cashflow, streak, insight -->
                     <div class="today-strip" id="dashboard-today-strip"></div>
 
-                    <!-- Habit row: quick add + payday -->
+                    <div class="dashboard-actions-row">
+                        <button class="btn btn-outline btn-sm" id="btn-open-review">
+                            <i class="fa-solid fa-clipboard-check"></i> Monthly Review
+                        </button>
+                    </div>
+
+                    <!-- Habit row: quick add + coming up -->
                     <div class="dashboard-grid">
                         <div class="glass-card flex-3 quick-add-widget">
                             <div class="widget-header">
@@ -200,12 +213,12 @@
 
                         <div class="glass-card flex-2 recurring-income-widget">
                             <div class="widget-header">
-                                <h2>Recurring Income</h2>
+                                <h2>Coming Up</h2>
                                 <button class="btn btn-text btn-sm" data-goto="income">
                                     View <i class="fa-solid fa-chevron-right"></i>
                                 </button>
                             </div>
-                            <div class="income-due-list" id="dashboard-income-list"></div>
+                            <div class="income-due-list" id="dashboard-comingup"></div>
                         </div>
                     </div>
 
@@ -506,6 +519,17 @@
 
                     <div class="glass-card margin-top">
                         <div class="widget-header">
+                            <h2>Recurring Expenses / Bills</h2>
+                            <button class="btn btn-primary btn-sm" id="btn-add-recurring-expense">
+                                <i class="fa-solid fa-plus"></i> Add Bill
+                            </button>
+                        </div>
+                        <p class="section-desc">Rent, DSTV, data plans — anything you pay on a schedule. One tap logs the payment and shows the next due date.</p>
+                        <div class="income-sources-list" id="recurring-expenses-list"></div>
+                    </div>
+
+                    <div class="glass-card margin-top">
+                        <div class="widget-header">
                             <h2>Quick Add Buttons</h2>
                             <button class="btn btn-primary btn-sm" id="btn-add-quick-add">
                                 <i class="fa-solid fa-plus"></i> New Quick Add
@@ -572,6 +596,25 @@
                     </div>
                 </div>
 
+                <!-- VIEW: NET WORTH -->
+                <div id="view-networth" class="app-view">
+                    <div class="glass-card">
+                        <div class="widget-header"><h2>Net Worth</h2></div>
+                        <p class="section-desc">Everything you own minus what you owe: cash accounts + investments + savings goals + money owed to you, minus your debts.</p>
+                        <div id="networth-breakdown"></div>
+                    </div>
+                    <div class="glass-card margin-top">
+                        <div class="widget-header">
+                            <h2>Cash Accounts</h2>
+                            <button class="btn btn-primary btn-sm" id="btn-add-account">
+                                <i class="fa-solid fa-plus"></i> Add Account
+                            </button>
+                        </div>
+                        <p class="section-desc">Bank, cash and mobile-money balances. A balance is the opening amount plus every transaction you assign to that account.</p>
+                        <div class="accounts-list" id="accounts-list"></div>
+                    </div>
+                </div>
+
                 <!-- VIEW: MORE (mobile menu) -->
                 <div id="view-more" class="app-view">
                     <div class="glass-card">
@@ -596,6 +639,11 @@
                             <button class="more-menu-btn" data-tab="investments">
                                 <i class="fa-solid fa-arrow-trend-up"></i>
                                 <span>Investments</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <button class="more-menu-btn" data-tab="networth">
+                                <i class="fa-solid fa-scale-balanced"></i>
+                                <span>Net Worth</span>
                                 <i class="fa-solid fa-chevron-right"></i>
                             </button>
                             <button class="more-menu-btn" data-tab="categories">
@@ -624,9 +672,23 @@
                                     <i class="fa-solid fa-file-export"></i>
                                 </div>
                                 <h3>Backup Database</h3>
-                                <p>Download everything — transactions, categories, budgets, income sources, quick-adds and debts — as a JSON file.</p>
+                                <p>Download everything — transactions, categories, budgets, accounts, bills, goals, investments and reviews — as a JSON file.</p>
                                 <button class="btn btn-outline" id="btn-export-data">
                                     <i class="fa-solid fa-download"></i> Export Data
+                                </button>
+                            </div>
+
+                            <div class="settings-option-card">
+                                <div class="option-icon text-primary">
+                                    <i class="fa-solid fa-file-csv"></i>
+                                </div>
+                                <h3>Export to CSV</h3>
+                                <p>Spreadsheet-friendly exports for your records or an accountant.</p>
+                                <button class="btn btn-outline" id="btn-export-transactions-csv">
+                                    <i class="fa-solid fa-download"></i> Transactions CSV
+                                </button>
+                                <button class="btn btn-outline" id="btn-export-investments-csv">
+                                    <i class="fa-solid fa-download"></i> Investments CSV
                                 </button>
                             </div>
 
@@ -647,7 +709,7 @@
                                     <i class="fa-solid fa-trash-can"></i>
                                 </div>
                                 <h3>Factory Reset</h3>
-                                <p>Permanently delete all data — transactions, categories, budgets, income sources, quick-adds and debts — resetting to defaults.</p>
+                                <p>Permanently delete all data — transactions, categories, budgets, accounts, bills, goals, investments and reviews — resetting to defaults.</p>
                                 <button class="btn btn-danger" id="btn-reset-data">
                                     <i class="fa-solid fa-triangle-exclamation"></i> Clear All Data
                                 </button>
@@ -734,6 +796,11 @@
                             <!-- Dynamically populated categories -->
                         </select>
                     </div>
+                </div>
+
+                <div class="form-group" data-account-field hidden>
+                    <label for="tx-account">Account</label>
+                    <select id="tx-account"></select>
                 </div>
 
                 <div class="form-group">
@@ -901,6 +968,10 @@
                     <label for="pay-note">Note (Optional)</label>
                     <input type="text" id="pay-note" placeholder="e.g. arrived 3 days late">
                 </div>
+                <div class="form-group" data-account-field hidden>
+                    <label for="pay-account">Into account</label>
+                    <select id="pay-account"></select>
+                </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-outline" onclick="document.getElementById('log-payment-modal').classList.remove('active')">Cancel</button>
                     <button type="submit" class="btn btn-primary">Add to Income</button>
@@ -945,20 +1016,26 @@
                         <select id="qa-category" required></select>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="qa-icon">Icon</label>
-                    <select id="qa-icon">
-                        <option value="fa-solid fa-bolt">&#xf0e7; Bolt</option>
-                        <option value="fa-solid fa-bus">&#xf207; Transport</option>
-                        <option value="fa-solid fa-wifi">&#xf1eb; Airtime / Data</option>
-                        <option value="fa-solid fa-bowl-food">&#xe4c6; Food</option>
-                        <option value="fa-solid fa-mug-hot">&#xf7b6; Drinks</option>
-                        <option value="fa-solid fa-cart-shopping">&#xf07a; Shopping</option>
-                        <option value="fa-solid fa-house">&#xf015; Home</option>
-                        <option value="fa-solid fa-graduation-cap">&#xf19d; Learning</option>
-                        <option value="fa-solid fa-gift">&#xf06b; Gift</option>
-                        <option value="fa-solid fa-circle-nodes">&#xf1e2; Other</option>
-                    </select>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="qa-icon">Icon</label>
+                        <select id="qa-icon">
+                            <option value="fa-solid fa-bolt">&#xf0e7; Bolt</option>
+                            <option value="fa-solid fa-bus">&#xf207; Transport</option>
+                            <option value="fa-solid fa-wifi">&#xf1eb; Airtime / Data</option>
+                            <option value="fa-solid fa-bowl-food">&#xe4c6; Food</option>
+                            <option value="fa-solid fa-mug-hot">&#xf7b6; Drinks</option>
+                            <option value="fa-solid fa-cart-shopping">&#xf07a; Shopping</option>
+                            <option value="fa-solid fa-house">&#xf015; Home</option>
+                            <option value="fa-solid fa-graduation-cap">&#xf19d; Learning</option>
+                            <option value="fa-solid fa-gift">&#xf06b; Gift</option>
+                            <option value="fa-solid fa-circle-nodes">&#xf1e2; Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group" data-account-field hidden>
+                        <label for="qa-account">Account</label>
+                        <select id="qa-account"></select>
+                    </div>
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-outline" onclick="document.getElementById('quick-add-modal').classList.remove('active')">Cancel</button>
@@ -1048,6 +1125,10 @@
                 <div class="form-group">
                     <label for="dp-note">Note (Optional)</label>
                     <input type="text" id="dp-note" placeholder="e.g. second instalment">
+                </div>
+                <div class="form-group" data-account-field hidden>
+                    <label for="dp-account">Account</label>
+                    <select id="dp-account"></select>
                 </div>
                 <label class="checkbox-row">
                     <input type="checkbox" id="dp-log-tx" checked>
@@ -1139,6 +1220,10 @@
                 <div class="form-group">
                     <label for="contribute-note">Note (Optional)</label>
                     <input type="text" id="contribute-note" placeholder="e.g. from side gig">
+                </div>
+                <div class="form-group" data-account-field hidden>
+                    <label for="contribute-account">From account</label>
+                    <select id="contribute-account"></select>
                 </div>
                 <label class="checkbox-row">
                     <input type="checkbox" id="contribute-log-tx" checked>
@@ -1278,6 +1363,10 @@
                         <input type="text" id="activity-note" placeholder="Optional">
                     </div>
                 </div>
+                <div class="form-group" data-account-field hidden>
+                    <label for="activity-account">Cash account <span class="label-hint">(if logging as a transaction)</span></label>
+                    <select id="activity-account"></select>
+                </div>
                 <label class="checkbox-row">
                     <input type="checkbox" id="activity-log-tx">
                     <span id="activity-log-tx-label">Also log as a cash transaction</span>
@@ -1285,6 +1374,134 @@
                 <div class="modal-actions">
                     <button type="button" class="btn btn-outline" onclick="document.getElementById('activity-modal').classList.remove('active')">Cancel</button>
                     <button type="submit" class="btn btn-primary">Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT ACCOUNT -->
+    <div class="modal-overlay" id="account-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2 id="account-modal-title">Add Account</h2>
+                <button type="button" class="btn-close-modal" onclick="document.getElementById('account-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="account-form">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="acc-name">Account Name</label>
+                        <input type="text" id="acc-name" placeholder="e.g. GTBank Current" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="acc-type">Type</label>
+                        <select id="acc-type">
+                            <option value="bank">Bank</option>
+                            <option value="cash">Cash / Wallet</option>
+                            <option value="mobile">Mobile Money</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="acc-opening">Opening Balance (₦) <span class="label-hint">— the balance right now</span></label>
+                    <div class="input-prefix-wrapper">
+                        <span class="input-prefix">₦</span>
+                        <input type="number" id="acc-opening" placeholder="0.00" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="acc-notes">Notes (Optional)</label>
+                    <textarea id="acc-notes" rows="2" placeholder="Anything worth noting..."></textarea>
+                </div>
+                <label class="checkbox-row" id="acc-archived-row" hidden>
+                    <input type="checkbox" id="acc-archived">
+                    <span>Archived (hide from net worth and pickers)</span>
+                </label>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('account-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD / EDIT RECURRING EXPENSE -->
+    <div class="modal-overlay" id="recurring-expense-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2 id="recurring-expense-modal-title">Add Bill</h2>
+                <button type="button" class="btn-close-modal" onclick="document.getElementById('recurring-expense-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="recurring-expense-form">
+                <div class="form-group">
+                    <label for="rx-name">Name</label>
+                    <input type="text" id="rx-name" placeholder="e.g. Apartment Rent, DSTV" required>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="rx-amount">Amount (₦)</label>
+                        <div class="input-prefix-wrapper">
+                            <span class="input-prefix">₦</span>
+                            <input type="number" id="rx-amount" placeholder="0.00" min="0.01" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="rx-category">Expense Category</label>
+                        <select id="rx-category" required></select>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="rx-cadence">How often</label>
+                        <select id="rx-cadence">
+                            <option value="monthly">Monthly</option>
+                            <option value="biweekly">Every 2 weeks</option>
+                            <option value="weekly">Weekly</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="rx-start">Starts / last paid</label>
+                        <input type="date" id="rx-start" required>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="rx-end">Ends <span class="label-hint">(optional)</span></label>
+                        <input type="date" id="rx-end">
+                    </div>
+                    <div class="form-group" data-account-field hidden>
+                        <label for="rx-account">Paid from</label>
+                        <select id="rx-account"></select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="rx-notes">Notes (Optional)</label>
+                    <textarea id="rx-notes" rows="2" placeholder="Plan / package / anything worth noting"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('recurring-expense-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Bill</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: MONTHLY REVIEW -->
+    <div class="modal-overlay" id="review-modal">
+        <div class="modal-content glass-card modal-wide">
+            <div class="modal-header">
+                <h2 id="review-modal-title">Monthly Review</h2>
+                <button type="button" class="btn-close-modal" onclick="document.getElementById('review-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="review-form">
+                <div id="review-body"></div>
+                <div class="form-group">
+                    <label for="review-note">Your reflection</label>
+                    <textarea id="review-note" rows="4" placeholder="What went well? What will you change next month?"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('review-modal').classList.remove('active')">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Review</button>
                 </div>
             </form>
         </div>
