@@ -56,7 +56,10 @@ function chartTheme() {
     return {
         text: cs.getPropertyValue('--text-secondary').trim() || '#94a3b8',
         strong: cs.getPropertyValue('--text-primary').trim() || '#f8fafc',
-        grid: cs.getPropertyValue('--tint-2').trim() || 'rgba(148,163,184,0.15)'
+        grid: cs.getPropertyValue('--tint-2').trim() || 'rgba(148,163,184,0.15)',
+        surface: cs.getPropertyValue('--bg-secondary').trim() || '#131a2e',
+        success: cs.getPropertyValue('--color-success').trim() || '#10b981',
+        danger: cs.getPropertyValue('--color-danger').trim() || '#f43f5e'
     };
 }
 
@@ -211,8 +214,13 @@ function makeId(prefix) {
     return `${prefix}-${Date.now()}${Math.random().toString(36).slice(2, 6)}`;
 }
 
+// Local YYYY-MM-DD (never toISOString, which shifts by the UTC offset).
+function ymd(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function todayISO() {
-    return new Date().toISOString().split('T')[0];
+    return ymd(new Date());
 }
 
 // Populate sample data for visually premium demo (using Naira ₦ values)
@@ -221,9 +229,16 @@ function loadSampleData() {
     const curYear = today.getFullYear();
     const curMonth = today.getMonth();
 
+    const dim = new Date(curYear, curMonth + 1, 0).getDate(); // days in this month
+    // A date `daysAgo` before today. Normally that's a recent day; but when today
+    // is early in the month it would land in the previous month and leave the
+    // demo's "this month" empty — so in that case we bunch the sample rows into
+    // the opening days of the month (at most ~5 days ahead of today).
     const getDateOffset = (daysAgo) => {
-        const d = new Date(curYear, curMonth, today.getDate() - daysAgo);
-        return d.toISOString().split('T')[0];
+        const target = today.getDate() - daysAgo;
+        const spread = Math.max(6, Math.min(dim - 1, today.getDate() + 4));
+        const day = target >= 1 ? target : 1 + (daysAgo * 5) % spread;
+        return ymd(new Date(curYear, curMonth, Math.min(day, dim)));
     };
 
     // Budgets
@@ -252,13 +267,13 @@ function loadSampleData() {
         { id: 'tx-e9', title: 'Cinema Tickets & Snacks', type: 'expense', amount: 14000, categoryId: 'cat-entertainment', date: getDateOffset(12), notes: 'Weekend movie outing' },
 
         // Previous Month Incomes
-        { id: 'tx-p-s1', title: 'Monthly Salary Paycheck', type: 'income', amount: 850000, categoryId: 'cat-salary', date: new Date(curYear, curMonth - 1, 1).toISOString().split('T')[0], notes: 'Salary transfer' },
-        { id: 'tx-p-s2', title: 'Web App Feature Project', type: 'income', amount: 220000, categoryId: 'cat-freelance', date: new Date(curYear, curMonth - 1, 10).toISOString().split('T')[0], notes: '' },
+        { id: 'tx-p-s1', title: 'Monthly Salary Paycheck', type: 'income', amount: 850000, categoryId: 'cat-salary', date: ymd(new Date(curYear, curMonth - 1, 1)), notes: 'Salary transfer' },
+        { id: 'tx-p-s2', title: 'Web App Feature Project', type: 'income', amount: 220000, categoryId: 'cat-freelance', date: ymd(new Date(curYear, curMonth - 1, 10)), notes: '' },
         // Previous Month Expenses
-        { id: 'tx-p-e1', title: 'Monthly Rent Payment', type: 'expense', amount: 300000, categoryId: 'cat-housing', date: new Date(curYear, curMonth - 1, 5).toISOString().split('T')[0], notes: '' },
-        { id: 'tx-p-e2', title: 'Supermarket Outing', type: 'expense', amount: 55000, categoryId: 'cat-food', date: new Date(curYear, curMonth - 1, 7).toISOString().split('T')[0], notes: '' },
-        { id: 'tx-p-e3', title: 'Concert Ticket', type: 'expense', amount: 30000, categoryId: 'cat-entertainment', date: new Date(curYear, curMonth - 1, 18).toISOString().split('T')[0], notes: '' },
-        { id: 'tx-p-e4', title: 'Utility Token Recharge', type: 'expense', amount: 25000, categoryId: 'cat-utilities', date: new Date(curYear, curMonth - 1, 15).toISOString().split('T')[0], notes: '' }
+        { id: 'tx-p-e1', title: 'Monthly Rent Payment', type: 'expense', amount: 300000, categoryId: 'cat-housing', date: ymd(new Date(curYear, curMonth - 1, 5)), notes: '' },
+        { id: 'tx-p-e2', title: 'Supermarket Outing', type: 'expense', amount: 55000, categoryId: 'cat-food', date: ymd(new Date(curYear, curMonth - 1, 7)), notes: '' },
+        { id: 'tx-p-e3', title: 'Concert Ticket', type: 'expense', amount: 30000, categoryId: 'cat-entertainment', date: ymd(new Date(curYear, curMonth - 1, 18)), notes: '' },
+        { id: 'tx-p-e4', title: 'Utility Token Recharge', type: 'expense', amount: 25000, categoryId: 'cat-utilities', date: ymd(new Date(curYear, curMonth - 1, 15)), notes: '' }
     ];
 
     // Recurring income sources
@@ -266,15 +281,16 @@ function loadSampleData() {
         {
             id: 'src-salary', name: 'Monthly Salary', categoryId: 'cat-salary',
             amount: 850000, cadence: 'monthly',
-            startDate: new Date(curYear, curMonth - 2, 1).toISOString().split('T')[0],
-            endDate: null, lastLoggedDate: getDateOffset(1), active: true, notes: 'Principal job'
+            startDate: ymd(new Date(curYear, curMonth - 2, 1)),
+            endDate: null, lastLoggedDate: getDateOffset(1), active: true,
+            accountId: 'acc-bank', notes: 'Principal job'
         },
         {
             id: 'src-nysc', name: 'NYSC Allowance', categoryId: 'cat-allowance',
             amount: 33000, cadence: 'monthly',
-            startDate: new Date(curYear, curMonth, 1).toISOString().split('T')[0],
-            endDate: new Date(curYear + 1, curMonth, 0).toISOString().split('T')[0],
-            lastLoggedDate: null, active: true, notes: 'Service year stipend'
+            startDate: ymd(new Date(curYear, curMonth, 1)),
+            endDate: ymd(new Date(curYear + 1, curMonth, 0)),
+            lastLoggedDate: null, active: true, accountId: 'acc-cash', notes: 'Service year stipend'
         }
     ];
 
@@ -289,8 +305,8 @@ function loadSampleData() {
     state.debts = [
         {
             id: 'debt-friend', name: 'Loan from a friend', counterparty: 'Chidi', kind: 'iOwe',
-            originalAmount: 60000, createdDate: new Date(curYear, curMonth - 1, 2).toISOString().split('T')[0],
-            dueDate: new Date(curYear, curMonth + 1, 15).toISOString().split('T')[0], notes: 'Emergency car repair',
+            originalAmount: 60000, createdDate: ymd(new Date(curYear, curMonth - 1, 2)),
+            dueDate: ymd(new Date(curYear, curMonth + 1, 15)), notes: 'Emergency car repair',
             status: 'active',
             payments: [
                 { id: 'pmt-1', amount: 20000, date: getDateOffset(9), note: 'First instalment', txId: null }
@@ -310,10 +326,10 @@ function loadSampleData() {
     state.goals = [
         {
             id: 'goal-aws', name: 'AWS Certification', targetAmount: 150000, savedAmount: 55000,
-            targetDate: new Date(curYear, curMonth + 4, 1).toISOString().split('T')[0],
+            targetDate: ymd(new Date(curYear, curMonth + 4, 1)),
             icon: 'fa-solid fa-graduation-cap', color: '#0ea5e9', status: 'active',
             contributions: [
-                { id: 'gc-1', amount: 30000, date: new Date(curYear, curMonth - 1, 3).toISOString().split('T')[0], note: 'Kickoff', txId: null },
+                { id: 'gc-1', amount: 30000, date: ymd(new Date(curYear, curMonth - 1, 3)), note: 'Kickoff', txId: null },
                 { id: 'gc-2', amount: 25000, date: getDateOffset(5), note: '', txId: null }
             ]
         },
@@ -321,7 +337,7 @@ function loadSampleData() {
             id: 'goal-emergency', name: 'Emergency Fund', targetAmount: 500000, savedAmount: 120000,
             targetDate: null, icon: 'fa-solid fa-shield-halved', color: '#10b981', status: 'active',
             contributions: [
-                { id: 'gc-3', amount: 120000, date: new Date(curYear, curMonth - 2, 15).toISOString().split('T')[0], note: 'Rollover', txId: null }
+                { id: 'gc-3', amount: 120000, date: ymd(new Date(curYear, curMonth - 2, 15)), note: 'Rollover', txId: null }
             ]
         }
     ];
@@ -335,9 +351,9 @@ function loadSampleData() {
               units: 3, avgCost: 480, currentPrice: 520, notes: 'Long-term hold' }
         ],
         activity: [
-            { id: 'ia-1', holdingId: 'hold-mtn', type: 'buy', units: 200, pricePerUnit: 190, amount: 38000, fee: 0, date: new Date(curYear, curMonth - 3, 8).toISOString().split('T')[0], note: 'Initial position', txId: null, realizedPL: 0 },
+            { id: 'ia-1', holdingId: 'hold-mtn', type: 'buy', units: 200, pricePerUnit: 190, amount: 38000, fee: 0, date: ymd(new Date(curYear, curMonth - 3, 8)), note: 'Initial position', txId: null, realizedPL: 0 },
             { id: 'ia-2', holdingId: 'hold-mtn', type: 'dividend', units: 0, pricePerUnit: 0, amount: 4200, fee: 0, date: getDateOffset(15), note: 'Interim dividend', txId: 'tx-s3', realizedPL: 0 },
-            { id: 'ia-3', holdingId: 'hold-voo', type: 'buy', units: 3, pricePerUnit: 480, amount: 1440, fee: 0, date: new Date(curYear, curMonth - 2, 20).toISOString().split('T')[0], note: '', txId: null, realizedPL: 0 }
+            { id: 'ia-3', holdingId: 'hold-voo', type: 'buy', units: 3, pricePerUnit: 480, amount: 1440, fee: 0, date: ymd(new Date(curYear, curMonth - 2, 20)), note: '', txId: null, realizedPL: 0 }
         ]
     };
 
@@ -358,13 +374,13 @@ function loadSampleData() {
     state.recurringExpenses = [
         {
             id: 'rx-rent', name: 'Apartment Rent', categoryId: 'cat-housing', amount: 300000,
-            cadence: 'monthly', startDate: new Date(curYear, curMonth - 2, 5).toISOString().split('T')[0],
+            cadence: 'monthly', startDate: ymd(new Date(curYear, curMonth - 2, 5)),
             endDate: null, lastLoggedDate: getDateOffset(5), active: true, accountId: 'acc-bank', notes: ''
         },
         {
             id: 'rx-dstv', name: 'DSTV Subscription', categoryId: 'cat-entertainment', amount: 24500,
-            cadence: 'monthly', startDate: new Date(curYear, curMonth - 3, 6).toISOString().split('T')[0],
-            endDate: null, lastLoggedDate: new Date(curYear, curMonth - 1, 6).toISOString().split('T')[0],
+            cadence: 'monthly', startDate: ymd(new Date(curYear, curMonth - 3, 6)),
+            endDate: null, lastLoggedDate: ymd(new Date(curYear, curMonth - 1, 6)),
             active: true, accountId: 'acc-bank', notes: 'Premium package'
         }
     ];
@@ -374,7 +390,7 @@ function loadSampleData() {
         {
             id: 'rev-1', month: monthKey(new Date(curYear, curMonth - 1, 1)),
             note: 'Rent and food ate most of the budget. Cut back on eating out next month.',
-            createdDate: new Date(curYear, curMonth, 3).toISOString().split('T')[0]
+            createdDate: ymd(new Date(curYear, curMonth, 3))
         }
     ];
 }
@@ -763,6 +779,7 @@ function renderCharts() {
     }
 
     if (donutDataValues.length > 0) {
+        const donutTotal = donutDataValues.reduce((s, v) => s + v, 0);
         const donutCtx = document.getElementById('categoryDonutChart').getContext('2d');
         categoryChartInstance = new Chart(donutCtx, {
             type: 'doughnut',
@@ -771,7 +788,8 @@ function renderCharts() {
                 datasets: [{
                     data: donutDataValues,
                     backgroundColor: donutColors,
-                    borderWidth: 0,
+                    borderColor: ct.surface,
+                    borderWidth: 2,
                     hoverOffset: 6
                 }]
             },
@@ -780,26 +798,41 @@ function renderCharts() {
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'right',
+                        position: 'bottom',
+                        align: 'start',
                         labels: {
                             color: ct.strong,
                             font: { family: 'Outfit', size: 12 },
                             usePointStyle: true,
-                            padding: 12
+                            boxWidth: 8,
+                            padding: 8,
+                            // Put the amount + share in the legend text so the chart
+                            // never relies on colour alone to convey the data.
+                            generateLabels: function(chart) {
+                                return chart.data.labels.map((label, i) => {
+                                    const v = chart.data.datasets[0].data[i];
+                                    const pct = donutTotal ? Math.round(v / donutTotal * 100) : 0;
+                                    return {
+                                        text: `${label} — ${formatNaira(v)} (${pct}%)`,
+                                        fillStyle: chart.data.datasets[0].backgroundColor[i],
+                                        strokeStyle: chart.data.datasets[0].backgroundColor[i],
+                                        pointStyle: 'circle',
+                                        index: i
+                                    };
+                                });
+                            }
                         }
                     },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                let label = context.label || '';
-                                if (label) label += ': ';
-                                label += formatNaira(context.raw);
-                                return label;
+                                const pct = donutTotal ? Math.round(context.raw / donutTotal * 100) : 0;
+                                return `${context.label || ''}: ${formatNaira(context.raw)} (${pct}%)`;
                             }
                         }
                     }
                 },
-                cutout: '75%'
+                cutout: '72%'
             }
         });
         const donutCanvas = document.getElementById('categoryDonutChart');
@@ -853,13 +886,21 @@ function renderCharts() {
     if (hasData) {
         const trendCtx = document.getElementById('monthlyTrendChart').getContext('2d');
         
+        const fade = (hex) => {
+            const n = hex.replace('#', '');
+            const r = parseInt(n.slice(0, 2), 16), g = parseInt(n.slice(2, 4), 16), b = parseInt(n.slice(4, 6), 16);
+            return `rgba(${r}, ${g}, ${b}, 0.06)`;
+        };
         const greenGradient = trendCtx.createLinearGradient(0, 0, 0, 300);
-        greenGradient.addColorStop(0, '#10b981');
-        greenGradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)');
+        greenGradient.addColorStop(0, ct.success);
+        greenGradient.addColorStop(1, fade(ct.success));
 
         const redGradient = trendCtx.createLinearGradient(0, 0, 0, 300);
-        redGradient.addColorStop(0, '#f43f5e');
-        redGradient.addColorStop(1, 'rgba(244, 63, 94, 0.05)');
+        redGradient.addColorStop(0, ct.danger);
+        redGradient.addColorStop(1, fade(ct.danger));
+
+        const totalIn = barIncome.reduce((s, v) => s + v, 0);
+        const totalOut = barExpense.reduce((s, v) => s + v, 0);
 
         trendChartInstance = new Chart(trendCtx, {
             type: 'bar',
@@ -867,19 +908,21 @@ function renderCharts() {
                 labels: barLabels,
                 datasets: [
                     {
-                        label: 'Income',
+                        label: `Income  ${formatNaira(totalIn)}`,
                         data: barIncome,
                         backgroundColor: greenGradient,
+                        borderColor: ct.success,
+                        borderWidth: 1,
                         borderRadius: 6,
-                        borderWidth: 0,
                         maxBarThickness: 24
                     },
                     {
-                        label: 'Expenses',
+                        label: `Expenses  ${formatNaira(totalOut)}`,
                         data: barExpense,
                         backgroundColor: redGradient,
+                        borderColor: ct.danger,
+                        borderWidth: 1,
                         borderRadius: 6,
-                        borderWidth: 0,
                         maxBarThickness: 24
                     }
                 ]
@@ -894,7 +937,11 @@ function renderCharts() {
                     },
                     y: {
                         grid: { color: ct.grid },
-                        ticks: { color: ct.text, font: { family: 'Outfit', size: 11 } }
+                        ticks: {
+                            color: ct.text,
+                            font: { family: 'Outfit', size: 11 },
+                            callback: (v) => '₦' + (v >= 1000 ? Math.round(v / 1000) + 'k' : v)
+                        }
                     }
                 },
                 plugins: {
@@ -903,7 +950,13 @@ function renderCharts() {
                         labels: {
                             color: ct.strong,
                             font: { family: 'Outfit', size: 12 },
-                            usePointStyle: true
+                            usePointStyle: true,
+                            padding: 14
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (c) => `${c.dataset.label.split('  ')[0]}: ${formatNaira(c.raw)}`
                         }
                     }
                 }
@@ -1857,6 +1910,8 @@ function openIncomeSourceModal(id = null) {
     document.getElementById('src-start').value = src ? src.startDate : todayISO();
     document.getElementById('src-end').value = src && src.endDate ? src.endDate : '';
     document.getElementById('src-notes').value = src ? (src.notes || '') : '';
+    fillAccountSelect(document.getElementById('src-account'), src ? (src.accountId || '') : undefined);
+    syncAccountFieldVisibility();
     incomeSourceModal.classList.add('active');
 }
 window.openIncomeSourceModal = openIncomeSourceModal;
@@ -1874,6 +1929,7 @@ document.getElementById('income-source-form').addEventListener('submit', (e) => 
     const cadence = document.getElementById('src-cadence').value;
     const startDate = document.getElementById('src-start').value;
     const endDate = document.getElementById('src-end').value || null;
+    const accountId = document.getElementById('src-account').value || null;
     const notes = document.getElementById('src-notes').value.trim();
 
     if (!name || isNaN(amount) || amount <= 0 || !categoryId || !startDate) {
@@ -1887,11 +1943,11 @@ document.getElementById('income-source-form').addEventListener('submit', (e) => 
 
     if (editingSourceId) {
         const s = state.incomeSources.find(x => x.id === editingSourceId);
-        if (s) Object.assign(s, { name, categoryId, amount, cadence, startDate, endDate, notes });
+        if (s) Object.assign(s, { name, categoryId, amount, cadence, startDate, endDate, accountId, notes });
     } else {
         state.incomeSources.push({
             id: makeId('src'), name, categoryId, amount, cadence,
-            startDate, endDate, lastLoggedDate: null, active: true, notes
+            startDate, endDate, lastLoggedDate: null, active: true, accountId, notes
         });
     }
     saveData();

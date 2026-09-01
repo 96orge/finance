@@ -36,7 +36,8 @@ browser's `localStorage`, so it can be hosted as static files (e.g. GitHub Pages
 - **Data & Backup** — export everything to JSON or transactions / investment activity to
   **CSV**, import a backup, or factory reset.
 - **Light / dark theme** — Auto (follows your OS), Light or Dark, chosen from the sidebar
-  (or the mobile *More* menu) and remembered.
+  (or the mobile *More* menu) and remembered. Gold brand with an indigo accent, driven
+  entirely by semantic design tokens.
 - Responsive: desktop sidebar plus a mobile bottom-nav bar (with a **More** menu),
   floating add button, and bottom-sheet modals.
 - **Accessible** — visible keyboard focus, labelled controls, `role="dialog"` modals with
