@@ -2,8 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>96orgeBudget - Personal Finance Visualizer</title>
+    <!-- Apply the saved theme before first paint to avoid a flash -->
+    <script>
+        (function () {
+            try {
+                var s = JSON.parse(localStorage.getItem('96orge_budget_state') || '{}');
+                var t = s && s.settings && s.settings.theme;
+                if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+            } catch (e) { /* no-op */ }
+        })();
+    </script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,6 +25,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="dark-theme">
+    <a href="#main" class="sr-only sr-only-focusable">Skip to main content</a>
     <!-- Mobile Top Bar -->
     <header class="mobile-top-bar">
         <div class="mobile-brand">
@@ -23,8 +34,8 @@
             </div>
             <span>96orgeBudget</span>
         </div>
-        <div class="mobile-avatar">
-            <i class="fa-solid fa-user"></i>
+        <div class="mobile-avatar" role="img" aria-label="Personal wallet">
+            <i class="fa-solid fa-user" aria-hidden="true"></i>
         </div>
     </header>
 
@@ -79,8 +90,13 @@
                     <i class="fa-solid fa-sliders"></i>
                     <span>Data & Backup</span>
                 </button>
+                <div class="theme-toggle" role="group" aria-label="Colour theme">
+                    <button type="button" data-theme-choice="system" aria-pressed="true"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i> Auto</button>
+                    <button type="button" data-theme-choice="light" aria-pressed="false"><i class="fa-solid fa-sun" aria-hidden="true"></i> Light</button>
+                    <button type="button" data-theme-choice="dark" aria-pressed="false"><i class="fa-solid fa-moon" aria-hidden="true"></i> Dark</button>
+                </div>
                 <div class="user-profile">
-                    <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                    <div class="avatar"><i class="fa-solid fa-user" aria-hidden="true"></i></div>
                     <div class="user-info">
                         <span class="user-name">Personal Wallet</span>
                         <span class="user-status">Active Tracker</span>
@@ -90,7 +106,7 @@
         </aside>
 
         <!-- Main Content Area -->
-        <main class="main-content">
+        <main class="main-content" id="main">
             <!-- Header -->
             <header class="app-header">
                 <div class="header-left">
@@ -100,8 +116,8 @@
                         
                         <!-- Month Selector Dropdown -->
                         <div class="dashboard-month-filter" id="dashboard-month-filter-container">
-                            <i class="fa-solid fa-calendar-check"></i>
-                            <select id="dashboard-month-select">
+                            <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
+                            <select id="dashboard-month-select" aria-label="Dashboard month">
                                 <!-- Dynamic month lists -->
                             </select>
                         </div>
@@ -657,6 +673,11 @@
                                 <i class="fa-solid fa-chevron-right"></i>
                             </button>
                         </div>
+                        <div class="theme-toggle" role="group" aria-label="Colour theme">
+                            <button type="button" data-theme-choice="system" aria-pressed="true"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i> Auto</button>
+                            <button type="button" data-theme-choice="light" aria-pressed="false"><i class="fa-solid fa-sun" aria-hidden="true"></i> Light</button>
+                            <button type="button" data-theme-choice="dark" aria-pressed="false"><i class="fa-solid fa-moon" aria-hidden="true"></i> Dark</button>
+                        </div>
                     </div>
                 </div>
 
@@ -728,8 +749,8 @@
     </div>
 
     <!-- Floating Action Button for Mobile -->
-    <button class="mobile-fab" id="mobile-add-tx-btn" title="Add Transaction">
-        <i class="fa-solid fa-plus"></i>
+    <button class="mobile-fab" id="mobile-add-tx-btn" aria-label="Add transaction">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
     </button>
 
     <!-- Mobile Bottom Navigation Bar -->
@@ -757,7 +778,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h2 id="modal-transaction-title">Add Transaction</h2>
-                <button class="btn-close-modal" id="btn-close-tx-modal"><i class="fa-solid fa-xmark"></i></button>
+                <button class="btn-close-modal" id="btn-close-tx-modal" aria-label="Close dialog"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
             </div>
             <form id="transaction-form">
                 <div class="form-row-2">
@@ -821,7 +842,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h2>Create Custom Category</h2>
-                <button class="btn-close-modal" id="btn-close-cat-modal"><i class="fa-solid fa-xmark"></i></button>
+                <button class="btn-close-modal" id="btn-close-cat-modal" aria-label="Close dialog"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
             </div>
             <form id="category-form">
                 <div class="form-group">
@@ -893,7 +914,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h2 id="income-source-modal-title">Add Income Source</h2>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('income-source-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="btn-close-modal" aria-label="Close dialog" onclick="document.getElementById('income-source-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="income-source-form">
                 <div class="form-group">
@@ -948,7 +969,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h2 id="log-payment-title">Log Payment</h2>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('log-payment-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="btn-close-modal" aria-label="Close dialog" onclick="document.getElementById('log-payment-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="log-payment-form">
                 <div class="form-row-2">
@@ -985,7 +1006,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h2 id="quick-add-modal-title">New Quick Add</h2>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('quick-add-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="btn-close-modal" aria-label="Close dialog" onclick="document.getElementById('quick-add-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="quick-add-form">
                 <div class="form-row-2">
@@ -1050,7 +1071,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h2 id="debt-modal-title">Add Debt</h2>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('debt-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="btn-close-modal" aria-label="Close dialog" onclick="document.getElementById('debt-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="debt-form">
                 <div class="form-group">
@@ -1106,7 +1127,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h2 id="debt-payment-title">Record Payment</h2>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('debt-payment-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="btn-close-modal" aria-label="Close dialog" onclick="document.getElementById('debt-payment-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="debt-payment-form">
                 <div class="form-row-2">
@@ -1147,7 +1168,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h2 id="goal-modal-title">New Goal</h2>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('goal-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="btn-close-modal" aria-label="Close dialog" onclick="document.getElementById('goal-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="goal-form">
                 <div class="form-group">
@@ -1201,7 +1222,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h2 id="contribute-title">Contribute</h2>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('contribute-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="btn-close-modal" aria-label="Close dialog" onclick="document.getElementById('contribute-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="contribute-form">
                 <div class="form-row-2">
@@ -1242,7 +1263,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h2>Pay yourself first</h2>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('fund-goals-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="btn-close-modal" aria-label="Close dialog" onclick="document.getElementById('fund-goals-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="fund-goals-form">
                 <p class="section-desc">You just logged some income. Move a little into your goals now? Leave a field blank to skip it.</p>
@@ -1260,7 +1281,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h2 id="holding-modal-title">Add Holding</h2>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('holding-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="btn-close-modal" aria-label="Close dialog" onclick="document.getElementById('holding-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="holding-form">
                 <div class="form-row-2">
@@ -1319,7 +1340,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h2 id="activity-modal-title">Record Activity</h2>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('activity-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="btn-close-modal" aria-label="Close dialog" onclick="document.getElementById('activity-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="activity-form">
                 <div class="form-group">
@@ -1384,7 +1405,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h2 id="account-modal-title">Add Account</h2>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('account-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="btn-close-modal" aria-label="Close dialog" onclick="document.getElementById('account-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="account-form">
                 <div class="form-row-2">
@@ -1430,7 +1451,7 @@
         <div class="modal-content glass-card">
             <div class="modal-header">
                 <h2 id="recurring-expense-modal-title">Add Bill</h2>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('recurring-expense-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="btn-close-modal" aria-label="Close dialog" onclick="document.getElementById('recurring-expense-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="recurring-expense-form">
                 <div class="form-group">
@@ -1491,7 +1512,7 @@
         <div class="modal-content glass-card modal-wide">
             <div class="modal-header">
                 <h2 id="review-modal-title">Monthly Review</h2>
-                <button type="button" class="btn-close-modal" onclick="document.getElementById('review-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" class="btn-close-modal" aria-label="Close dialog" onclick="document.getElementById('review-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="review-form">
                 <div id="review-body"></div>
@@ -1508,7 +1529,7 @@
     </div>
 
     <!-- Notification Toast -->
-    <div class="toast-container" id="toast-container"></div>
+    <div class="toast-container" id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
 
     <script src="app.js"></script>
 </body>
