@@ -460,6 +460,36 @@ NAV_BUTTONS.forEach(btn => {
     btn.addEventListener('click', () => switchToTab(btn.getAttribute('data-tab')));
 });
 
+// --- Mobile Side Drawer ---
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const mobileDrawer = document.getElementById('mobile-side-drawer');
+const mobileDrawerOverlay = document.getElementById('mobile-drawer-overlay');
+const mobileDrawerClose = document.getElementById('mobile-drawer-close');
+
+function openMobileDrawer() {
+    mobileDrawer.classList.add('open');
+    mobileDrawerOverlay.classList.add('open');
+    mobileDrawer.setAttribute('aria-hidden', 'false');
+    mobileMenuBtn.setAttribute('aria-expanded', 'true');
+}
+
+function closeMobileDrawer() {
+    mobileDrawer.classList.remove('open');
+    mobileDrawerOverlay.classList.remove('open');
+    mobileDrawer.setAttribute('aria-hidden', 'true');
+    mobileMenuBtn.setAttribute('aria-expanded', 'false');
+}
+
+mobileMenuBtn.addEventListener('click', openMobileDrawer);
+mobileDrawerClose.addEventListener('click', closeMobileDrawer);
+mobileDrawerOverlay.addEventListener('click', closeMobileDrawer);
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeMobileDrawer();
+});
+document.querySelectorAll('.drawer-nav-btn').forEach(btn => {
+    btn.addEventListener('click', closeMobileDrawer);
+});
+
 // Shortcut button redirects
 document.getElementById('btn-view-all-transactions').addEventListener('click', () => {
     switchToTab('transactions');

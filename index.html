@@ -28,6 +28,9 @@
     <a href="#main" class="sr-only sr-only-focusable">Skip to main content</a>
     <!-- Mobile Top Bar -->
     <header class="mobile-top-bar">
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-side-drawer">
+            <i class="fa-solid fa-bars" aria-hidden="true"></i>
+        </button>
         <div class="mobile-brand">
             <div class="logo-icon-sm">
                 <i class="fa-solid fa-wallet"></i>
@@ -38,6 +41,67 @@
             <i class="fa-solid fa-user" aria-hidden="true"></i>
         </div>
     </header>
+
+    <!-- Mobile Side Drawer Navigation -->
+    <div class="mobile-drawer-overlay" id="mobile-drawer-overlay"></div>
+    <aside class="mobile-side-drawer" id="mobile-side-drawer" aria-hidden="true">
+        <div class="sidebar-brand">
+            <div class="logo-icon">
+                <i class="fa-solid fa-wallet"></i>
+            </div>
+            <span>96orgeBudget</span>
+            <button class="mobile-drawer-close" id="mobile-drawer-close" aria-label="Close menu">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <button class="nav-btn drawer-nav-btn" data-tab="dashboard">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-btn drawer-nav-btn" data-tab="transactions">
+                <i class="fa-solid fa-list-check"></i>
+                <span>Transactions</span>
+            </button>
+            <button class="nav-btn drawer-nav-btn" data-tab="income">
+                <i class="fa-solid fa-money-bill-trend-up"></i>
+                <span>Income & Recurring</span>
+            </button>
+            <button class="nav-btn drawer-nav-btn" data-tab="debts">
+                <i class="fa-solid fa-hand-holding-dollar"></i>
+                <span>Debts & Lending</span>
+            </button>
+            <button class="nav-btn drawer-nav-btn" data-tab="goals">
+                <i class="fa-solid fa-bullseye"></i>
+                <span>Goals</span>
+            </button>
+            <button class="nav-btn drawer-nav-btn" data-tab="investments">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+                <span>Investments</span>
+            </button>
+            <button class="nav-btn drawer-nav-btn" data-tab="networth">
+                <i class="fa-solid fa-scale-balanced"></i>
+                <span>Net Worth</span>
+            </button>
+            <button class="nav-btn drawer-nav-btn" data-tab="categories">
+                <i class="fa-solid fa-tags"></i>
+                <span>Categories & Budgets</span>
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="nav-btn drawer-nav-btn" data-tab="settings">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Data & Backup</span>
+            </button>
+            <div class="theme-toggle" role="group" aria-label="Colour theme">
+                <button type="button" data-theme-choice="system" aria-pressed="true"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i> Auto</button>
+                <button type="button" data-theme-choice="light" aria-pressed="false"><i class="fa-solid fa-sun" aria-hidden="true"></i> Light</button>
+                <button type="button" data-theme-choice="dark" aria-pressed="false"><i class="fa-solid fa-moon" aria-hidden="true"></i> Dark</button>
+            </div>
+        </div>
+    </aside>
 
     <!-- App Container -->
     <div class="app-container">
