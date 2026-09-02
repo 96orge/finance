@@ -279,7 +279,7 @@ body::after {
 .logo-icon-sm {
     width: 30px;
     height: 30px;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    background: var(--color-primary);
     border-radius: var(--border-radius-sm);
     display: flex;
     align-items: center;
@@ -292,10 +292,7 @@ body::after {
     font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: -0.5px;
-    background: linear-gradient(to right, var(--color-primary-ink), var(--color-accent-ink));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--color-primary-ink);
 }
 
 .mobile-avatar {
@@ -336,7 +333,7 @@ body::after {
 .logo-icon {
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    background: var(--color-primary);
     border-radius: var(--border-radius-sm);
     display: flex;
     align-items: center;
@@ -350,10 +347,7 @@ body::after {
     font-size: 1.35rem;
     font-weight: 700;
     letter-spacing: -0.5px;
-    background: linear-gradient(to right, var(--color-primary-ink), var(--color-accent-ink));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--color-primary-ink);
 }
 
 .sidebar-nav {
@@ -559,10 +553,10 @@ body::after {
     background: transparent;
 }
 
-.card-balance::before { background: linear-gradient(to right, var(--color-primary), var(--color-accent)); }
+.card-balance::before { background: var(--color-primary); }
 .card-income::before { background: var(--color-success); }
 .card-expense::before { background: var(--color-danger); }
-.card-savings::before { background: linear-gradient(to right, var(--color-primary), var(--color-success)); }
+.card-savings::before { background: var(--color-primary); }
 
 .card-header {
     display: flex;
@@ -631,7 +625,7 @@ body::after {
 
 .savings-progress-bar {
     height: 100%;
-    background: linear-gradient(to right, var(--color-primary), var(--color-success));
+    background: var(--color-success);
     border-radius: 3px;
     transition: width 0.6s ease;
 }
@@ -699,6 +693,23 @@ body::after {
     align-items: center;
     justify-content: center;
     height: 280px;
+}
+
+/* Containers that render a .no-data-placeholder need to be the positioning
+   context themselves, otherwise the absolutely-positioned placeholder escapes
+   to the nearest positioned ancestor and every empty-state overlaps on top
+   of the others (visible as stacked/overlapping cards on the dashboard). */
+.quick-add-strip,
+.income-due-list,
+.budget-limits-list,
+.recent-list,
+.current-budgets-summary-list,
+#dashboard-needs-wants,
+#dashboard-debt-list,
+#dashboard-goals-list,
+#dashboard-invest-list {
+    position: relative;
+    min-height: 120px;
 }
 
 .no-data-overlay, .no-data-placeholder {
@@ -963,7 +974,7 @@ textarea:focus {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--color-primary-hover), var(--color-primary));
+    background: var(--color-primary);
     color: var(--on-primary);
     box-shadow: 0 4px 15px var(--color-primary-glow);
 }
@@ -1717,7 +1728,7 @@ textarea:focus {
     width: 54px;
     height: 54px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-primary-hover), var(--color-primary));
+    background: var(--color-primary);
     color: var(--on-primary);
     border: none;
     font-size: 1.35rem;
@@ -2561,7 +2572,7 @@ textarea:focus {
 
 /* --- Reminders banner --- */
 .reminders-banner {
-    background: linear-gradient(135deg, var(--color-accent-glow), transparent);
+    background: var(--color-accent-glow);
     border: 1px solid var(--color-accent-glow);
     border-radius: var(--border-radius-md);
     padding: 0.85rem 1rem;

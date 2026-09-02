@@ -885,19 +885,14 @@ function renderCharts() {
 
     if (hasData) {
         const trendCtx = document.getElementById('monthlyTrendChart').getContext('2d');
-        
-        const fade = (hex) => {
+
+        const tint = (hex) => {
             const n = hex.replace('#', '');
             const r = parseInt(n.slice(0, 2), 16), g = parseInt(n.slice(2, 4), 16), b = parseInt(n.slice(4, 6), 16);
-            return `rgba(${r}, ${g}, ${b}, 0.06)`;
+            return `rgba(${r}, ${g}, ${b}, 0.55)`;
         };
-        const greenGradient = trendCtx.createLinearGradient(0, 0, 0, 300);
-        greenGradient.addColorStop(0, ct.success);
-        greenGradient.addColorStop(1, fade(ct.success));
-
-        const redGradient = trendCtx.createLinearGradient(0, 0, 0, 300);
-        redGradient.addColorStop(0, ct.danger);
-        redGradient.addColorStop(1, fade(ct.danger));
+        const greenFill = tint(ct.success);
+        const redFill = tint(ct.danger);
 
         const totalIn = barIncome.reduce((s, v) => s + v, 0);
         const totalOut = barExpense.reduce((s, v) => s + v, 0);
@@ -910,7 +905,7 @@ function renderCharts() {
                     {
                         label: `Income  ${formatNaira(totalIn)}`,
                         data: barIncome,
-                        backgroundColor: greenGradient,
+                        backgroundColor: greenFill,
                         borderColor: ct.success,
                         borderWidth: 1,
                         borderRadius: 6,
@@ -919,7 +914,7 @@ function renderCharts() {
                     {
                         label: `Expenses  ${formatNaira(totalOut)}`,
                         data: barExpense,
-                        backgroundColor: redGradient,
+                        backgroundColor: redFill,
                         borderColor: ct.danger,
                         borderWidth: 1,
                         borderRadius: 6,
