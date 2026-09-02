@@ -194,78 +194,78 @@
                 </div>
             </header>
 
-            <!-- Stats Bar -->
-            <section class="stats-grid">
-                <!-- Card 1: Net Worth -->
-                <div class="stat-card glass-card card-balance">
-                    <div class="card-header">
-                        <span class="card-label">Net Worth</span>
-                        <div class="card-icon balance-icon">
-                            <i class="fa-solid fa-scale-balanced"></i>
-                        </div>
-                    </div>
-                    <div class="card-value" id="stat-total-balance">₦0.00</div>
-                    <div class="card-subtext">
-                        <span class="trend trend-neutral" id="balance-trend">
-                            <i class="fa-solid fa-circle-info"></i> Ready to track
-                        </span>
-                    </div>
-                </div>
-                
-                <!-- Card 2: Income -->
-                <div class="stat-card glass-card card-income">
-                    <div class="card-header">
-                        <span class="card-label">Total Income</span>
-                        <div class="card-icon income-icon">
-                            <i class="fa-solid fa-arrow-trend-up"></i>
-                        </div>
-                    </div>
-                    <div class="card-value text-success" id="stat-total-income">₦0.00</div>
-                    <div class="card-subtext">
-                        <span class="trend trend-up" id="income-percentage">
-                            <i class="fa-solid fa-plus"></i> Cat. Organized
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Card 3: Expenses -->
-                <div class="stat-card glass-card card-expense">
-                    <div class="card-header">
-                        <span class="card-label">Total Expenses</span>
-                        <div class="card-icon expense-icon">
-                            <i class="fa-solid fa-arrow-trend-down"></i>
-                        </div>
-                    </div>
-                    <div class="card-value text-danger" id="stat-total-expenses">₦0.00</div>
-                    <div class="card-subtext">
-                        <span class="trend trend-down" id="expense-percentage">
-                            <i class="fa-solid fa-minus"></i> Visual Breakdown
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Card 4: Savings Rate -->
-                <div class="stat-card glass-card card-savings">
-                    <div class="card-header">
-                        <span class="card-label">Savings Rate</span>
-                        <div class="card-icon savings-icon">
-                            <i class="fa-solid fa-piggy-bank"></i>
-                        </div>
-                    </div>
-                    <div class="card-value text-primary" id="stat-savings-rate">0%</div>
-                    <div class="card-subtext">
-                        <div class="savings-progress-track">
-                            <div class="savings-progress-bar" id="savings-progress-bar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             <!-- Dynamic Views Container -->
             <div class="view-container">
-                
+
                 <!-- VIEW 1: DASHBOARD -->
                 <div id="view-dashboard" class="app-view active">
+
+                    <!-- Stats Bar -->
+                    <section class="stats-grid">
+                        <!-- Card 1: Net Worth -->
+                        <div class="stat-card glass-card card-balance">
+                            <div class="card-header">
+                                <span class="card-label">Net Worth</span>
+                                <div class="card-icon balance-icon">
+                                    <i class="fa-solid fa-scale-balanced"></i>
+                                </div>
+                            </div>
+                            <div class="card-value" id="stat-total-balance">₦0.00</div>
+                            <div class="card-subtext">
+                                <span class="trend trend-neutral" id="balance-trend">
+                                    <i class="fa-solid fa-circle-info"></i> Ready to track
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Income -->
+                        <div class="stat-card glass-card card-income">
+                            <div class="card-header">
+                                <span class="card-label">Total Income</span>
+                                <div class="card-icon income-icon">
+                                    <i class="fa-solid fa-arrow-trend-up"></i>
+                                </div>
+                            </div>
+                            <div class="card-value text-success" id="stat-total-income">₦0.00</div>
+                            <div class="card-subtext">
+                                <span class="trend trend-up" id="income-percentage">
+                                    <i class="fa-solid fa-plus"></i> Cat. Organized
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Expenses -->
+                        <div class="stat-card glass-card card-expense">
+                            <div class="card-header">
+                                <span class="card-label">Total Expenses</span>
+                                <div class="card-icon expense-icon">
+                                    <i class="fa-solid fa-arrow-trend-down"></i>
+                                </div>
+                            </div>
+                            <div class="card-value text-danger" id="stat-total-expenses">₦0.00</div>
+                            <div class="card-subtext">
+                                <span class="trend trend-down" id="expense-percentage">
+                                    <i class="fa-solid fa-minus"></i> Visual Breakdown
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: Savings Rate -->
+                        <div class="stat-card glass-card card-savings">
+                            <div class="card-header">
+                                <span class="card-label">Savings Rate</span>
+                                <div class="card-icon savings-icon">
+                                    <i class="fa-solid fa-piggy-bank"></i>
+                                </div>
+                            </div>
+                            <div class="card-value text-primary" id="stat-savings-rate">0%</div>
+                            <div class="card-subtext">
+                                <div class="savings-progress-track">
+                                    <div class="savings-progress-bar" id="savings-progress-bar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
 
                     <!-- Reminders / attention banner -->
                     <div class="reminders-banner" id="reminders-banner" role="status" hidden></div>
