@@ -340,7 +340,7 @@ body::after {
     z-index: 200;
     transform: translateX(-100%);
     transition: transform var(--transition-normal);
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .mobile-side-drawer.open {
@@ -390,7 +390,7 @@ body::after {
     padding: 2rem 1.5rem;
     position: fixed;
     height: 100vh;
-    overflow-y: auto;
+    overflow: hidden;
     z-index: 100;
     transition: transform var(--transition-normal);
 }
@@ -400,6 +400,7 @@ body::after {
     align-items: center;
     gap: var(--space-3);
     margin-bottom: var(--space-12);
+    flex-shrink: 0;
 }
 
 .logo-icon {
@@ -426,7 +427,9 @@ body::after {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    flex-grow: 1;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .nav-btn {
@@ -477,6 +480,7 @@ body::after {
     margin-top: auto;
     border-top: 1px solid var(--border-glass);
     padding-top: var(--space-6);
+    flex-shrink: 0;
 }
 
 .user-profile {
@@ -596,6 +600,15 @@ body::after {
 
 .glass-card:hover {
     border-color: var(--border-glass-hover);
+}
+
+.quick-add-widget,
+.recurring-income-widget,
+.needs-wants-widget,
+.debt-widget,
+.goals-widget,
+.investments-widget {
+    padding: var(--space-6);
 }
 
 /* Stats Cards Grid */
