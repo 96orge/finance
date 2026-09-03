@@ -589,6 +589,7 @@ body::after {
 
 /* Glassmorphism Cards */
 .glass-card {
+    position: relative; /* contains any .no-data-placeholder rendered inside it (see note near that rule) */
     background: var(--bg-glass);
     backdrop-filter: var(--glass-blur);
     border: 1px solid var(--border-glass);
@@ -792,6 +793,13 @@ body::after {
 .budget-limits-list,
 .recent-list,
 .current-budgets-summary-list,
+.goals-list,
+.debts-list,
+.income-sources-list,
+.quick-adds-list,
+.subscriptions-list,
+.holdings-list,
+.accounts-list,
 #dashboard-needs-wants,
 #dashboard-debt-list,
 #dashboard-goals-list,
