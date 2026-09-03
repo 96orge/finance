@@ -745,7 +745,7 @@ body::after {
 }
 
 .margin-top {
-    margin-top: var(--space-6);
+    margin-top: var(--space-8);
 }
 
 .flex-2 { flex: 2; }
@@ -988,6 +988,7 @@ body::after {
     flex-direction: column;
     gap: var(--space-2);
     margin-bottom: 1.25rem;
+    min-width: 0; /* let inputs shrink to their grid column instead of overflowing it */
 }
 
 .form-group label {
@@ -1007,6 +1008,7 @@ input[type="number"],
 input[type="date"],
 select,
 textarea {
+    width: 100%;
     background: var(--tint-1);
     border: 1px solid var(--border-glass);
     padding: 0.75rem 1rem;
@@ -1216,13 +1218,13 @@ textarea:focus {
     transition: var(--transition-fast);
 }
 
-.type-selector-toggle input[value="expense"]:checked + .toggle-expense {
+.type-selector-toggle input:checked + .toggle-expense {
     background: var(--color-danger);
     color: white;
     box-shadow: 0 2px 8px var(--color-danger-glow);
 }
 
-.type-selector-toggle input[value="income"]:checked + .toggle-income {
+.type-selector-toggle input:checked + .toggle-income {
     background: var(--color-success);
     color: white;
     box-shadow: 0 2px 8px var(--color-success-glow);
