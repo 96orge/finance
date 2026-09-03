@@ -411,6 +411,7 @@ const TAB_TITLES = {
     goals: 'Goals',
     investments: 'Investments',
     networth: 'Net Worth',
+    accounts: 'Accounts',
     more: 'More',
     settings: 'Data Management'
 };
@@ -449,6 +450,8 @@ function switchToTab(targetTab) {
         renderInvestmentsView();
     } else if (targetTab === 'networth') {
         renderNetWorthView();
+    } else if (targetTab === 'accounts') {
+        renderAccountsList();
     }
 
     if (typeof labelIconButtons === 'function') {
@@ -3066,8 +3069,12 @@ function holdingValueNaira(h) { return toNaira(h.units * h.currentPrice, h.curre
 function holdingCostNaira(h) { return toNaira(h.units * h.avgCost, h.currency); }
 
 function portfolioTotals() {
+    const byCcy = { NGN: { value: 0, cost: 0 }, USD: { value: 0, cost: 0 } };
     let valueN = 0, costN = 0, realized = 0, missingRate = false;
     state.investments.holdings.forEach(h => {
+        const ccy = h.currency === 'USD' ? 'USD' : 'NGN';
+        byCcy[ccy].value += h.units * h.currentPrice;
+        byCcy[ccy].cost += h.units * h.avgCost;
         const v = holdingValueNaira(h), c = holdingCostNaira(h);
         if (v === null || c === null) { missingRate = true; return; }
         valueN += v; costN += c;
@@ -3077,7 +3084,10 @@ function portfolioTotals() {
         const pl = toNaira(a.realizedPL || 0, holdingCcy(a.holdingId));
         if (pl !== null) realized += pl;
     });
-    return { valueN, costN, unrealized: valueN - costN, realized, missingRate };
+    return {
+        valueN, costN, unrealized: valueN - costN, realized, missingRate, byCcy,
+        usdValueNaira: toNaira(byCcy.USD.value, 'USD') // null if rate missing
+    };
 }
 
 function renderInvestmentsWidget() {
@@ -3118,6 +3128,14 @@ function renderPortfolioSummary() {
             <div><span class="pm-label">Unrealised</span><span class="pm-value ${up ? 'text-success' : 'text-danger'}">${up ? '+' : ''}${formatNaira(t.unrealized)} (${plPct}%)</span></div>
             <div><span class="pm-label">Realised</span><span class="pm-value ${t.realized >= 0 ? 'text-success' : 'text-danger'}">${t.realized >= 0 ? '+' : ''}${formatNaira(t.realized)}</span></div>
         </div>
+        <div class="portfolio-metrics margin-top">
+            <div><span class="pm-label">NGX Stocks</span><span class="pm-value">${formatNaira(t.byCcy.NGN.value)}</span></div>
+            ${hasUsd ? `<div>
+                <span class="pm-label">US Stocks</span>
+                <span class="pm-value">$${t.byCcy.USD.value.toLocaleString()}</span>
+                ${t.usdValueNaira !== null ? `<span class="holding-value-naira">≈ ${formatNaira(t.usdValueNaira)}</span>` : '<span class="pill pill-due">rate needed</span>'}
+            </div>` : ''}
+        </div>
         ${hasUsd ? `
         <div class="portfolio-fx">
             <label for="usd-rate-input">₦ per US$1</label>
@@ -3146,7 +3164,21 @@ function renderHoldingsList() {
         box.innerHTML = placeholder('fa-arrow-trend-up', 'No holdings yet. Use “Add Holding”.');
         return;
     }
-    state.investments.holdings.forEach(h => box.appendChild(holdingCard(h)));
+    const t = portfolioTotals();
+    const groups = [
+        { label: 'NGX Stocks', ccy: 'NGN', total: formatNaira(t.byCcy.NGN.value),
+          items: state.investments.holdings.filter(h => h.currency !== 'USD') },
+        { label: 'US Stocks', ccy: 'USD', total: `$${t.byCcy.USD.value.toLocaleString()}`,
+          items: state.investments.holdings.filter(h => h.currency === 'USD') }
+    ];
+    groups.forEach(g => {
+        if (g.items.length === 0) return;
+        const section = document.createElement('div');
+        section.className = 'debt-group';
+        section.innerHTML = `<h3 class="debt-group-title">${g.label} <span>${g.items.length}</span> <span class="debt-group-total">${g.total}</span></h3>`;
+        g.items.forEach(h => section.appendChild(holdingCard(h)));
+        box.appendChild(section);
+    });
 }
 
 function holdingCard(h) {
@@ -3351,16 +3383,21 @@ document.getElementById('activity-form').addEventListener('submit', (e) => {
 
     let txId = null;
     if (logTx) {
-        txId = makeId('tx');
-        const isIncome = (type === 'sell' || type === 'dividend');
-        state.transactions.push({
-            id: txId,
-            title: `${h.name} — ${type}`,
-            type: isIncome ? 'income' : 'expense',
-            amount: toNaira(amount, h.currency) || amount,
-            categoryId: isIncome ? 'cat-investments' : 'cat-invest',
-            date, notes: note, accountId
-        });
+        const convertedAmount = toNaira(amount, h.currency);
+        if (convertedAmount === null) {
+            showToast('Set a ₦/$ rate on the Investments page before logging this as a cash transaction — the trade was still recorded.', 'danger');
+        } else {
+            txId = makeId('tx');
+            const isIncome = (type === 'sell' || type === 'dividend');
+            state.transactions.push({
+                id: txId,
+                title: `${h.name} — ${type}`,
+                type: isIncome ? 'income' : 'expense',
+                amount: convertedAmount,
+                categoryId: isIncome ? 'cat-investments' : 'cat-invest',
+                date, notes: note, accountId
+            });
+        }
     }
 
     state.investments.activity.push({
@@ -3452,7 +3489,6 @@ function sparklineSVG(values, w = 260, h = 44) {
 
 function renderNetWorthView() {
     renderNetWorthBreakdown();
-    renderAccountsList();
 }
 
 function renderNetWorthBreakdown() {
@@ -3478,6 +3514,7 @@ function renderNetWorthBreakdown() {
             ${line('Owed to you', b.owedToMe)}
             ${line('Debts you owe', -b.iOwe)}
         </div>
+        ${portfolioTotals().missingRate ? `<div class="nw-cap-msg subtle">Investments total excludes USD holdings until a ₦/$ rate is set on the Investments page.</div>` : ''}
     `;
 }
 
@@ -3519,6 +3556,7 @@ window.setPrimaryAccount = function(id) {
     state.settings.primaryAccountId = id;
     saveData();
     renderNetWorthView();
+    renderAccountsList();
     showToast('Primary account updated', 'success');
 };
 
@@ -3534,6 +3572,7 @@ window.deleteAccount = function(id) {
     if (state.settings.primaryAccountId === id) state.settings.primaryAccountId = null;
     saveData();
     renderNetWorthView();
+    renderAccountsList();
     updateDashboard();
     showToast('Account removed', 'success');
 };
@@ -3578,6 +3617,7 @@ document.getElementById('account-form').addEventListener('submit', (e) => {
     saveData();
     closeAccountModal();
     renderNetWorthView();
+    renderAccountsList();
     updateDashboard();
     showToast('Account saved', 'success');
 });
