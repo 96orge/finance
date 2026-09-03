@@ -411,7 +411,6 @@ const TAB_TITLES = {
     goals: 'Goals',
     investments: 'Investments',
     networth: 'Net Worth',
-    accounts: 'Accounts',
     more: 'More',
     settings: 'Data Management'
 };
@@ -450,8 +449,6 @@ function switchToTab(targetTab) {
         renderInvestmentsView();
     } else if (targetTab === 'networth') {
         renderNetWorthView();
-    } else if (targetTab === 'accounts') {
-        renderAccountsList();
     }
 
     if (typeof labelIconButtons === 'function') {
@@ -3489,6 +3486,7 @@ function sparklineSVG(values, w = 260, h = 44) {
 
 function renderNetWorthView() {
     renderNetWorthBreakdown();
+    renderAccountsList();
 }
 
 function renderNetWorthBreakdown() {
@@ -3556,7 +3554,6 @@ window.setPrimaryAccount = function(id) {
     state.settings.primaryAccountId = id;
     saveData();
     renderNetWorthView();
-    renderAccountsList();
     showToast('Primary account updated', 'success');
 };
 
@@ -3572,7 +3569,6 @@ window.deleteAccount = function(id) {
     if (state.settings.primaryAccountId === id) state.settings.primaryAccountId = null;
     saveData();
     renderNetWorthView();
-    renderAccountsList();
     updateDashboard();
     showToast('Account removed', 'success');
 };
@@ -3617,7 +3613,6 @@ document.getElementById('account-form').addEventListener('submit', (e) => {
     saveData();
     closeAccountModal();
     renderNetWorthView();
-    renderAccountsList();
     updateDashboard();
     showToast('Account saved', 'success');
 });

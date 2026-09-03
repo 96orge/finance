@@ -84,10 +84,6 @@
                 <i class="fa-solid fa-scale-balanced"></i>
                 <span>Net Worth</span>
             </button>
-            <button class="nav-btn drawer-nav-btn" data-tab="accounts">
-                <i class="fa-solid fa-building-columns"></i>
-                <span>Accounts</span>
-            </button>
             <button class="nav-btn drawer-nav-btn" data-tab="categories">
                 <i class="fa-solid fa-tags"></i>
                 <span>Categories & Budgets</span>
@@ -146,10 +142,6 @@
                 <button class="nav-btn" data-tab="networth">
                     <i class="fa-solid fa-scale-balanced"></i>
                     <span>Net Worth</span>
-                </button>
-                <button class="nav-btn" data-tab="accounts">
-                    <i class="fa-solid fa-building-columns"></i>
-                    <span>Accounts</span>
                 </button>
                 <button class="nav-btn" data-tab="categories">
                     <i class="fa-solid fa-tags"></i>
@@ -687,20 +679,11 @@
                 <!-- VIEW: NET WORTH -->
                 <div id="view-networth" class="app-view">
                     <div class="glass-card">
-                        <div class="widget-header">
-                            <h2>Net Worth</h2>
-                            <button class="btn btn-text btn-sm" data-goto="accounts">
-                                Manage Accounts <i class="fa-solid fa-chevron-right"></i>
-                            </button>
-                        </div>
+                        <div class="widget-header"><h2>Net Worth</h2></div>
                         <p class="section-desc">Everything you own minus what you owe: cash accounts + investments + savings goals + money owed to you, minus your debts.</p>
                         <div id="networth-breakdown"></div>
                     </div>
-                </div>
-
-                <!-- VIEW: ACCOUNTS -->
-                <div id="view-accounts" class="app-view">
-                    <div class="glass-card">
+                    <div class="glass-card margin-top">
                         <div class="widget-header">
                             <h2>Cash Accounts</h2>
                             <button class="btn btn-primary btn-sm" id="btn-add-account">
@@ -741,11 +724,6 @@
                             <button class="more-menu-btn" data-tab="networth">
                                 <i class="fa-solid fa-scale-balanced"></i>
                                 <span>Net Worth</span>
-                                <i class="fa-solid fa-chevron-right"></i>
-                            </button>
-                            <button class="more-menu-btn" data-tab="accounts">
-                                <i class="fa-solid fa-building-columns"></i>
-                                <span>Accounts</span>
                                 <i class="fa-solid fa-chevron-right"></i>
                             </button>
                             <button class="more-menu-btn" data-tab="categories">
