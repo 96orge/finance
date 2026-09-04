@@ -411,6 +411,7 @@ const TAB_TITLES = {
     goals: 'Goals',
     investments: 'Investments',
     networth: 'Net Worth',
+    learn: 'Learn',
     more: 'More',
     settings: 'Data Management'
 };
@@ -449,6 +450,8 @@ function switchToTab(targetTab) {
         renderInvestmentsView();
     } else if (targetTab === 'networth') {
         renderNetWorthView();
+    } else if (targetTab === 'learn') {
+        renderLearnView();
     }
 
     if (typeof labelIconButtons === 'function') {
@@ -572,6 +575,7 @@ function updateDashboard() {
     populateMonthSelector();
     updateDashboardStats();
     renderRemindersBanner();
+    renderTipBanner('dashboard-tip-banner');
     renderTodayStrip();
     renderComingUpWidget();
     renderQuickAddWidget();
@@ -1170,9 +1174,9 @@ window.deleteTransaction = function(id) {
 // --- Category Customizer Page & Modals ---
 let selectedCategoryTab = 'expense';
 
-document.querySelectorAll('.sub-tab-btn').forEach(btn => {
+document.querySelectorAll('[data-cat-type]').forEach(btn => {
     btn.addEventListener('click', () => {
-        document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('[data-cat-type]').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         selectedCategoryTab = btn.getAttribute('data-cat-type');
         renderCategoriesManager();
@@ -3616,6 +3620,257 @@ document.getElementById('account-form').addEventListener('submit', (e) => {
     updateDashboard();
     showToast('Account saved', 'success');
 });
+
+// ============================================================================
+//  Learn — money habits, wealth creation, books & business/income insight
+//  Fully offline: a curated resource library plus a personalized "insights"
+//  engine built from data already tracked elsewhere in the app. No network
+//  calls — consistent with this app's "connects to no remote servers" claim.
+// ============================================================================
+
+const LEARN_RESOURCES = [
+    { id: 'book-psych-money', type: 'book', category: 'habits', icon: 'fa-solid fa-book-open',
+      title: 'The Psychology of Money', author: 'Morgan Housel',
+      blurb: 'Short lessons on how emotions, ego and luck shape money decisions more than spreadsheets do.',
+      link: 'https://www.goodreads.com/book/show/41881472' },
+    { id: 'book-your-money-life', type: 'book', category: 'habits', icon: 'fa-solid fa-book-open',
+      title: 'Your Money or Your Life', author: 'Vicki Robin & Joe Dominguez',
+      blurb: 'Reframes spending as trading hours of your life, and shows how to reclaim them.',
+      link: 'https://www.goodreads.com/book/show/3234451' },
+    { id: 'book-total-money-makeover', type: 'book', category: 'habits', icon: 'fa-solid fa-book-open',
+      title: 'The Total Money Makeover', author: 'Dave Ramsey',
+      blurb: 'A blunt, step-by-step plan for killing debt and building an emergency fund.',
+      link: 'https://www.goodreads.com/book/show/28881' },
+    { id: 'principle-pay-yourself-first', type: 'principle', category: 'habits', icon: 'fa-solid fa-piggy-bank',
+      title: 'Pay Yourself First', author: 'Classic principle',
+      blurb: 'Move savings out the moment income lands, before it has a chance to be spent.', link: null },
+    { id: 'principle-50-30-20', type: 'principle', category: 'habits', icon: 'fa-solid fa-scale-balanced',
+      title: 'The 50/30/20 Rule', author: 'Budgeting framework',
+      blurb: 'A simple split: 50% needs, 30% wants, 20% savings/debt payoff — a sanity check, not a law.', link: null },
+    { id: 'principle-emergency-fund', type: 'principle', category: 'habits', icon: 'fa-solid fa-umbrella',
+      title: 'Build a 3-6 Month Emergency Fund', author: 'Classic principle',
+      blurb: 'Cash set aside for job loss or emergencies so a bad month never becomes a debt spiral.', link: null },
+
+    { id: 'book-rich-dad', type: 'book', category: 'wealth', icon: 'fa-solid fa-book-open',
+      title: 'Rich Dad Poor Dad', author: 'Robert Kiyosaki',
+      blurb: 'The classic case for acquiring assets that pay you, instead of liabilities that cost you.',
+      link: 'https://www.goodreads.com/book/show/69571' },
+    { id: 'book-millionaire-next-door', type: 'book', category: 'wealth', icon: 'fa-solid fa-book-open',
+      title: 'The Millionaire Next Door', author: 'Thomas J. Stanley & William D. Danko',
+      blurb: 'Research on how most real millionaires live well below their means, not flashy at all.',
+      link: 'https://www.goodreads.com/book/show/998.The_Millionaire_Next_Door' },
+    { id: 'book-simple-path-wealth', type: 'book', category: 'wealth', icon: 'fa-solid fa-book-open',
+      title: 'The Simple Path to Wealth', author: 'JL Collins',
+      blurb: 'A no-nonsense case for low-cost index investing and financial independence.',
+      link: 'https://www.goodreads.com/book/show/17851031' },
+    { id: 'principle-compound-interest', type: 'principle', category: 'wealth', icon: 'fa-solid fa-chart-line',
+      title: 'Compound Interest Rewards Time', author: 'Classic principle',
+      blurb: 'Starting small and early usually beats starting big and late — time is the real multiplier.', link: null },
+    { id: 'principle-diversify', type: 'principle', category: 'wealth', icon: 'fa-solid fa-layer-group',
+      title: "Don't Put All Eggs in One Basket", author: 'Classic principle',
+      blurb: 'Spreading savings across cash, investments and goals cushions any single bad outcome.', link: null },
+    { id: 'principle-net-worth-tracking', type: 'principle', category: 'wealth', icon: 'fa-solid fa-scale-balanced',
+      title: 'Track Net Worth, Not Just Income', author: 'Classic principle',
+      blurb: 'A high salary with high debt can be worth less than a modest salary with real savings.', link: null },
+
+    { id: 'book-lean-startup', type: 'book', category: 'business', icon: 'fa-solid fa-book-open',
+      title: 'The Lean Startup', author: 'Eric Ries',
+      blurb: 'Build a small version fast, test it on real customers, and adjust before spending big.',
+      link: 'https://www.goodreads.com/book/show/10127019' },
+    { id: 'book-e-myth', type: 'book', category: 'business', icon: 'fa-solid fa-book-open',
+      title: 'The E-Myth Revisited', author: 'Michael E. Gerber',
+      blurb: 'Why working *in* a business differs from building one that runs without you.',
+      link: 'https://www.goodreads.com/book/show/331535' },
+    { id: 'book-4-hour-workweek', type: 'book', category: 'business', icon: 'fa-solid fa-book-open',
+      title: 'The 4-Hour Workweek', author: 'Tim Ferriss',
+      blurb: 'Questions the default of trading all your time for a paycheck; ideas on automation and outsourcing.',
+      link: 'https://www.goodreads.com/book/show/368593' },
+    { id: 'principle-solve-a-problem', type: 'principle', category: 'business', icon: 'fa-solid fa-lightbulb',
+      title: 'Businesses Solve Problems, Not Sell Products', author: 'Classic principle',
+      blurb: 'Start from a real, specific pain point someone already has and will pay to remove.', link: null },
+    { id: 'principle-start-small', type: 'principle', category: 'business', icon: 'fa-solid fa-seedling',
+      title: 'Start Before You Feel Ready', author: 'Classic principle',
+      blurb: 'A small paying customer today teaches more than a perfect plan that never launches.', link: null },
+
+    { id: 'book-i-will-teach', type: 'book', category: 'income', icon: 'fa-solid fa-book-open',
+      title: 'I Will Teach You to Be Rich', author: 'Ramit Sethi',
+      blurb: 'Practical scripts for negotiating pay, automating savings and investing without obsessing.',
+      link: 'https://www.goodreads.com/book/show/79509' },
+    { id: 'principle-multiple-streams', type: 'principle', category: 'income', icon: 'fa-solid fa-money-bill-trend-up',
+      title: 'Build More Than One Income Stream', author: 'Classic principle',
+      blurb: 'A side skill, a small side hustle or rental income adds resilience if a main job wavers.', link: null },
+    { id: 'principle-negotiate-pay', type: 'principle', category: 'income', icon: 'fa-solid fa-handshake',
+      title: 'Negotiate Pay, Don’t Just Accept It', author: 'Classic principle',
+      blurb: 'A raise or a fair rate compounds every year after — most offers have more room than assumed.', link: null },
+    { id: 'principle-invest-in-skills', type: 'principle', category: 'income', icon: 'fa-solid fa-graduation-cap',
+      title: 'Invest in Skills That Raise Your Ceiling', author: 'Classic principle',
+      blurb: 'A skill that raises your earning power usually outperforms most financial investments early on.', link: null }
+];
+
+const LEARN_TIPS = [
+    'Automate a small transfer to savings the day you get paid — before you can spend it.',
+    'Track every naira for one month; awareness alone tends to cut wasteful spending.',
+    'Before a non-essential purchase, wait 24 hours. Most urges fade.',
+    'An emergency fund isn’t about earning returns — it’s about buying you options when life goes sideways.',
+    'Debt with the highest interest rate costs you the most every day it lingers — target it first.',
+    'Net worth (what you own minus what you owe) tells a truer story than your salary alone.',
+    'Review your subscriptions every few months; small recurring charges add up quietly.',
+    'A budget isn’t a cage — it’s a plan for your money to do what you actually want.',
+    'The best investment return usually comes from paying off high-interest debt first.',
+    'Income is a lever: a raise, a side skill or a small business can move your numbers faster than cutting costs alone.',
+    'Small, boring, consistent saving beats sporadic, dramatic saving almost every time.',
+    'Lifestyle creep — spending more just because you earn more — quietly erases raises. Notice it.',
+    'Read one page of a personal-finance book today; the compounding is in the habit, not the volume.',
+    'Separate "needs" from "wants" honestly before you budget them — most overspending hides in "wants."',
+    'A goal with a deadline and a number ("₦500,000 by December") beats a vague wish to "save more."',
+    'Every skill you build is an asset that can’t be repossessed.',
+    'Insure the big risks (health, major assets) so one bad event can’t undo years of saving.',
+    'Negotiate once a year — for pay, rent, or a recurring bill. Most people never ask.',
+    'The first ₦10,000 saved is the hardest; it proves to you that saving is possible at all.',
+    'Diversify: cash, savings goals and investments each play a different role — none belongs alone.',
+    'A side income stream doesn’t need to replace your job to be worth building.',
+    'Spend consciously on what you value, and cut ruthlessly on what you don’t — that’s the whole game.',
+    'Write down your "why" for saving. A goal tied to a reason survives temptation better than a number alone.',
+    'Compounding rewards patience: money invested early has more time to grow than money invested late.'
+];
+
+let selectedLearnCategory = 'all';
+
+function dayOfYear(d) {
+    const start = new Date(d.getFullYear(), 0, 0);
+    return Math.floor((d - start) / 86400000);
+}
+
+function tipOfTheDay() {
+    return LEARN_TIPS[dayOfYear(new Date()) % LEARN_TIPS.length];
+}
+
+function renderTipBanner(elId, showLink = true) {
+    const box = document.getElementById(elId);
+    if (!box) return;
+    box.innerHTML = `
+        <div class="reminders-head">
+            <span><i class="fa-solid fa-lightbulb"></i> Tip of the day: ${escapeHtml(tipOfTheDay())}</span>
+            ${showLink ? `<button class="btn btn-text btn-sm" id="${elId}-goto-learn">Learn <i class="fa-solid fa-chevron-right"></i></button>` : ''}
+        </div>
+    `;
+    // Rendered dynamically, so it misses the page-load-time [data-goto] wiring — wire it directly.
+    const link = document.getElementById(`${elId}-goto-learn`);
+    if (link) link.addEventListener('click', () => switchToTab('learn'));
+}
+
+// Personalized callouts built entirely from data already tracked in this app —
+// no AI/network call, just thresholds over numbers the Dashboard already shows.
+function computeMoneyInsights() {
+    const insights = [];
+
+    const { need, want, total } = monthExpensesByPriority();
+    if (total > 0) {
+        const wantPct = Math.round((want / total) * 100);
+        if (wantPct > 40) {
+            insights.push({ tone: 'warn', label: 'Needs vs Wants', value: `${wantPct}% Wants`,
+                sub: 'The 50/30/20 rule suggests keeping wants nearer 30% of spending.' });
+        } else {
+            insights.push({ tone: 'good', label: 'Needs vs Wants', value: `${wantPct}% Wants`,
+                sub: 'Comfortably inside the 50/30/20 guideline — keep it up.' });
+        }
+    }
+
+    const { income, expense } = monthTotals();
+    if (income > 0) {
+        const savingsRate = Math.round(((income - expense) / income) * 100);
+        insights.push({
+            tone: savingsRate >= 20 ? 'good' : (savingsRate >= 0 ? 'warn' : 'bad'),
+            label: 'Savings Rate', value: `${savingsRate}%`,
+            sub: savingsRate >= 20
+                ? 'At or above the classic 20% savings target for this month.'
+                : savingsRate >= 0
+                    ? 'Below the classic 20% target — even a small automatic transfer helps.'
+                    : 'Spending exceeded income this month — worth a closer look at the Ledger.'
+        });
+    }
+
+    const activeDebts = state.debts.filter(d => d.kind === 'iOwe' && d.status === 'active');
+    if (activeDebts.length > 0) {
+        const remaining = activeDebts.reduce((s, d) => s + debtRemaining(d), 0);
+        const paid = activeDebts.reduce((s, d) => s + debtPaid(d), 0);
+        insights.push({ tone: 'warn', label: 'Debt Remaining', value: formatNaira(remaining),
+            sub: paid > 0 ? `${formatNaira(paid)} already paid down — the highest-interest debt first pays off fastest.` : 'Target the highest-interest debt first — it costs you the most every day it lingers.' });
+    }
+
+    const activeGoals = state.goals.filter(g => g.status === 'active');
+    if (activeGoals.length === 0) {
+        insights.push({ tone: 'warn', label: 'Savings Goals', value: 'None yet',
+            sub: 'Consider starting with a 3-6 month emergency fund goal.' });
+    }
+
+    const streak = computeStreak();
+    if (streak.current >= 3) {
+        insights.push({ tone: 'good', label: 'Consistency', value: `${streak.current}-day streak`,
+            sub: 'Awareness compounds — logging regularly is half of good money management.' });
+    }
+
+    const safe = computeSafeToSpend();
+    if (safe.safeMonth < 0) {
+        insights.push({ tone: 'bad', label: 'This Month’s Pace', value: formatNaira(Math.abs(safe.safeMonth)),
+            sub: 'Spending is ahead of income and budgets for this month.' });
+    }
+
+    return insights;
+}
+
+function renderLearnInsights() {
+    const box = document.getElementById('learn-insights-list');
+    if (!box) return;
+    const insights = computeMoneyInsights();
+    const cards = insights.length > 0
+        ? insights
+        : [0, 1, 2].map(i => ({ tone: 'good', label: 'Tip', value: '', sub: LEARN_TIPS[(dayOfYear(new Date()) + i) % LEARN_TIPS.length] }));
+    box.innerHTML = cards.map(c => `
+        <div class="today-tile today-${c.tone}">
+            <span class="today-label">${escapeHtml(c.label)}</span>
+            ${c.value ? `<span class="today-value">${escapeHtml(c.value)}</span>` : ''}
+            <span class="today-sub">${escapeHtml(c.sub)}</span>
+        </div>
+    `).join('');
+}
+
+function resourceCard(r) {
+    const typeLabel = r.type === 'book' ? 'Book' : r.type === 'article' ? 'Article' : 'Principle';
+    return `
+        <div class="settings-option-card">
+            <div class="option-icon text-primary"><i class="${r.icon}"></i></div>
+            <span class="pill pill-muted">${typeLabel}</span>
+            <h3>${escapeHtml(r.title)}</h3>
+            <p>${escapeHtml(r.author)} — ${escapeHtml(r.blurb)}</p>
+            ${r.link ? `<a class="btn btn-outline" href="${r.link}" target="_blank" rel="noopener">Learn More <i class="fa-solid fa-arrow-up-right-from-square"></i></a>` : ''}
+        </div>
+    `;
+}
+
+function renderLearnResources() {
+    const box = document.getElementById('learn-resources-grid');
+    if (!box) return;
+    const items = selectedLearnCategory === 'all'
+        ? LEARN_RESOURCES
+        : LEARN_RESOURCES.filter(r => r.category === selectedLearnCategory);
+    box.innerHTML = items.map(resourceCard).join('');
+}
+
+document.querySelectorAll('#learn-category-tabs .sub-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('#learn-category-tabs .sub-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedLearnCategory = btn.getAttribute('data-learn-category');
+        renderLearnResources();
+    });
+});
+
+function renderLearnView() {
+    renderTipBanner('learn-tip-banner', false);
+    renderLearnInsights();
+    renderLearnResources();
+}
 
 // --- Monthly review ---
 const reviewModal = document.getElementById('review-modal');

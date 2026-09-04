@@ -88,6 +88,10 @@
                 <i class="fa-solid fa-tags"></i>
                 <span>Categories & Budgets</span>
             </button>
+            <button class="nav-btn drawer-nav-btn" data-tab="learn">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Learn</span>
+            </button>
         </nav>
 
         <div class="sidebar-footer">
@@ -146,6 +150,10 @@
                 <button class="nav-btn" data-tab="categories">
                     <i class="fa-solid fa-tags"></i>
                     <span>Categories & Budgets</span>
+                </button>
+                <button class="nav-btn" data-tab="learn">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>Learn</span>
                 </button>
             </nav>
 
@@ -269,6 +277,9 @@
 
                     <!-- Reminders / attention banner -->
                     <div class="reminders-banner" id="reminders-banner" role="status" hidden></div>
+
+                    <!-- Money tip of the day, links into the Learn section -->
+                    <div class="reminders-banner" id="dashboard-tip-banner"></div>
 
                     <!-- Today strip: safe-to-spend, cashflow, streak, insight -->
                     <div class="today-strip" id="dashboard-today-strip"></div>
@@ -695,6 +706,30 @@
                     </div>
                 </div>
 
+                <!-- VIEW: LEARN -->
+                <div id="view-learn" class="app-view">
+                    <div class="reminders-banner" id="learn-tip-banner"></div>
+
+                    <div class="glass-card">
+                        <div class="widget-header"><h2>Your Insights</h2></div>
+                        <p class="section-desc">Personalized callouts based on your own tracked spending, debts and goals — not generic advice.</p>
+                        <div class="today-strip" id="learn-insights-list"></div>
+                    </div>
+
+                    <div class="glass-card margin-top">
+                        <div class="widget-header"><h2>Resource Library</h2></div>
+                        <p class="section-desc">Curated books, articles and principles on healthy money habits, wealth creation, business and generating income.</p>
+                        <div class="tabs-sub" id="learn-category-tabs">
+                            <button class="sub-tab-btn active" data-learn-category="all">All</button>
+                            <button class="sub-tab-btn" data-learn-category="habits">Money Habits</button>
+                            <button class="sub-tab-btn" data-learn-category="wealth">Wealth Building</button>
+                            <button class="sub-tab-btn" data-learn-category="business">Business</button>
+                            <button class="sub-tab-btn" data-learn-category="income">Income Generation</button>
+                        </div>
+                        <div class="settings-grid" id="learn-resources-grid"></div>
+                    </div>
+                </div>
+
                 <!-- VIEW: MORE (mobile menu) -->
                 <div id="view-more" class="app-view">
                     <div class="glass-card">
@@ -729,6 +764,11 @@
                             <button class="more-menu-btn" data-tab="categories">
                                 <i class="fa-solid fa-tags"></i>
                                 <span>Categories &amp; Budgets</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <button class="more-menu-btn" data-tab="learn">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                                <span>Learn</span>
                                 <i class="fa-solid fa-chevron-right"></i>
                             </button>
                             <button class="more-menu-btn" data-tab="settings">
