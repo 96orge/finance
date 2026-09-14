@@ -434,6 +434,9 @@ function switchToTab(targetTab) {
 
     PAGE_TITLE.textContent = TAB_TITLES[targetTab];
 
+    const monthFilter = document.getElementById('dashboard-month-filter-container');
+    if (monthFilter) monthFilter.hidden = targetTab !== 'dashboard';
+
     if (targetTab === 'dashboard') {
         updateDashboard();
     } else if (targetTab === 'transactions') {
@@ -2517,14 +2520,16 @@ function renderDebtsView() {
     const groups = [
         { label: 'I Owe', items: state.debts.filter(d => d.kind === 'iOwe' && d.status === 'active') },
         { label: 'Owed To Me', items: state.debts.filter(d => d.kind === 'owedToMe' && d.status === 'active') },
-        { label: 'Settled', items: state.debts.filter(d => d.status === 'settled') }
+        { label: 'Settled', items: state.debts.filter(d => d.status === 'settled'), collapsible: true }
     ];
 
     groups.forEach(g => {
         if (g.items.length === 0) return;
-        const section = document.createElement('div');
-        section.className = 'debt-group';
-        section.innerHTML = `<h3 class="debt-group-title">${g.label} <span>${g.items.length}</span></h3>`;
+        const section = document.createElement(g.collapsible ? 'details' : 'div');
+        section.className = g.collapsible ? 'debt-group debt-group-collapsible' : 'debt-group';
+        const titleTag = g.collapsible ? 'summary' : 'h3';
+        const chevron = g.collapsible ? '<i class="fa-solid fa-chevron-right debt-group-chevron"></i> ' : '';
+        section.innerHTML = `<${titleTag} class="debt-group-title">${chevron}${g.label} <span>${g.items.length}</span></${titleTag}>`;
         g.items.forEach(d => section.appendChild(debtCard(d)));
         box.appendChild(section);
     });
@@ -2892,7 +2897,19 @@ function renderGoalsView() {
         box.innerHTML = placeholder('fa-bullseye', 'No goals yet. Use “New Goal” to start a sinking fund.');
         return;
     }
-    state.goals.forEach(g => box.appendChild(goalCard(g)));
+    const isReached = g => g.status === 'reached' || g.savedAmount >= g.targetAmount;
+    const active = state.goals.filter(g => !isReached(g));
+    const reached = state.goals.filter(isReached);
+
+    active.forEach(g => box.appendChild(goalCard(g)));
+
+    if (reached.length > 0) {
+        const details = document.createElement('details');
+        details.className = 'debt-group debt-group-collapsible';
+        details.innerHTML = `<summary class="debt-group-title"><i class="fa-solid fa-chevron-right debt-group-chevron"></i> Reached <span>${reached.length}</span></summary>`;
+        reached.forEach(g => details.appendChild(goalCard(g)));
+        box.appendChild(details);
+    }
 }
 
 function goalCard(g) {

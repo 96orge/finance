@@ -568,6 +568,8 @@ body::after {
     transition: var(--transition-fast);
 }
 
+.dashboard-month-filter[hidden] { display: none; }
+
 .dashboard-month-filter:hover {
     border-color: var(--border-glass-hover);
 }
@@ -1554,6 +1556,12 @@ textarea:focus {
     line-height: 1.5;
 }
 
+/* Bare section headings (not part of a .widget-header) need their own spacing —
+   .section-desc's negative margin-top above is tuned for sitting under a
+   .widget-header h2, so undo it when a section-desc instead follows a plain h3. */
+.glass-card > h3 { margin-bottom: var(--space-3); }
+h3 + .section-desc { margin-top: 0; }
+
 .categories-list-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -2347,6 +2355,27 @@ textarea:focus {
     margin-bottom: var(--space-3);
 }
 
+summary.debt-group-title {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    list-style: none;
+}
+
+summary.debt-group-title::-webkit-details-marker { display: none; }
+
+.debt-group-chevron {
+    font-size: 0.65rem;
+    margin-right: 0.5rem;
+    transition: transform var(--transition-fast);
+}
+
+.debt-group-collapsible[open] .debt-group-chevron {
+    transform: rotate(90deg);
+}
+
+.debt-group-collapsible .goal-card + .goal-card { margin-top: var(--space-3); }
+
 .debt-group-title span {
     display: inline-block;
     margin-left: 0.4rem;
@@ -2357,6 +2386,7 @@ textarea:focus {
 }
 
 .debt-card { padding: 1rem 1.15rem; }
+.debt-card + .debt-card { margin-top: var(--space-3); }
 .debt-card.is-settled { opacity: 0.6; }
 
 .debt-card-head {
