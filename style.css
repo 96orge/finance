@@ -164,7 +164,8 @@ body {
     font-family: var(--font-main);
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    overflow-x: hidden;
+    overflow-x: clip; /* unlike 'hidden', doesn't force overflow-y to auto or create a scroll
+                          container, which would risk breaking position:sticky on mobile */
     min-height: 100vh;
 }
 
@@ -773,6 +774,7 @@ body::after {
     font-size: var(--text-lg);
     font-weight: 600;
     letter-spacing: -0.25px;
+    min-width: 0;
 }
 
 .chart-wrapper {
@@ -1320,14 +1322,17 @@ textarea:focus {
 
 .table-header-row {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
+    gap: var(--space-3);
     margin-bottom: var(--space-6);
 }
 
 .table-header-row h2 {
     font-size: var(--text-lg);
     font-weight: 600;
+    min-width: 0;
 }
 
 .table-wrapper {
@@ -1822,7 +1827,7 @@ textarea:focus {
 .mobile-fab {
     display: none;
     position: fixed;
-    bottom: 5rem;
+    bottom: 6rem;
     right: 1.25rem;
     width: 54px;
     height: 54px;
@@ -1843,21 +1848,22 @@ textarea:focus {
     transform: scale(0.9);
 }
 
-/* Mobile Navigation Bar */
+/* Mobile Navigation Bar — floats above the bottom edge like a card */
 .mobile-bottom-nav {
     display: none;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
     width: auto;
     background: var(--bg-glass);
     backdrop-filter: var(--glass-blur);
-    border-top: 1px solid var(--border-glass);
+    border: 1px solid var(--border-glass);
+    border-radius: 999px;
     grid-template-columns: repeat(4, 1fr);
-    padding: 0.45rem 0;
+    padding: 0.5rem 0.25rem;
     z-index: 99;
-    box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
 .mobile-nav-btn {
@@ -1926,7 +1932,7 @@ textarea:focus {
         margin-left: 0;
         padding: var(--space-5);
         padding-top: var(--space-6);
-        padding-bottom: 6.5rem; /* Space for mobile navigation */
+        padding-bottom: 7.5rem; /* Space for the floating mobile nav bar */
     }
 
     .app-header {
@@ -1968,6 +1974,10 @@ textarea:focus {
     .settings-grid {
         grid-template-columns: 1fr;
         gap: var(--space-4);
+    }
+
+    .today-strip {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -2689,11 +2699,17 @@ textarea:focus {
 
 .reminders-head {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     font-weight: 600;
     font-size: 0.9rem;
     gap: var(--space-3);
+}
+
+.reminders-head > span {
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .reminders-dismiss {
@@ -2818,6 +2834,45 @@ textarea:focus {
     flex-wrap: wrap;
     margin-top: 0.9rem;
 }
+
+.widget-header-actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.transfers-history {
+    display: flex;
+    flex-direction: column;
+    margin-top: var(--space-2);
+}
+
+.transfer-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--border-glass);
+}
+
+.transfer-row:first-child { border-top: none; padding-top: 0; }
+
+.transfer-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--tint-2);
+    color: var(--text-secondary);
+}
+
+.transfer-title { display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0; }
+.transfer-name { font-weight: 600; font-size: 0.9rem; }
+.transfer-meta { font-size: 0.76rem; color: var(--text-muted); }
+.transfer-amount { font-weight: 700; white-space: nowrap; }
 
 /* --- Monthly review modal --- */
 .modal-wide { max-width: 620px; }

@@ -697,12 +697,22 @@
                     <div class="glass-card margin-top">
                         <div class="widget-header">
                             <h2>Cash Accounts</h2>
-                            <button class="btn btn-primary btn-sm" id="btn-add-account">
-                                <i class="fa-solid fa-plus"></i> Add Account
-                            </button>
+                            <div class="widget-header-actions">
+                                <button class="btn btn-outline btn-sm" id="btn-transfer-funds">
+                                    <i class="fa-solid fa-right-left"></i> Transfer
+                                </button>
+                                <button class="btn btn-primary btn-sm" id="btn-add-account">
+                                    <i class="fa-solid fa-plus"></i> Add Account
+                                </button>
+                            </div>
                         </div>
                         <p class="section-desc">Bank, cash and mobile-money balances. A balance is the opening amount plus every transaction you assign to that account.</p>
                         <div class="accounts-list" id="accounts-list"></div>
+                        <div id="transfers-history-wrap" hidden>
+                            <hr class="card-divider">
+                            <h3>Recent Transfers</h3>
+                            <div class="transfers-history" id="transfers-history"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -1551,6 +1561,49 @@
                 <div class="modal-actions">
                     <button type="button" class="btn btn-outline" onclick="document.getElementById('account-modal').classList.remove('active')">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: TRANSFER FUNDS BETWEEN ACCOUNTS -->
+    <div class="modal-overlay" id="transfer-modal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h2>Transfer Funds</h2>
+                <button type="button" class="btn-close-modal" aria-label="Close dialog" onclick="document.getElementById('transfer-modal').classList.remove('active')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="transfer-form">
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="transfer-from">From Account</label>
+                        <select id="transfer-from" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="transfer-to">To Account</label>
+                        <select id="transfer-to" required></select>
+                    </div>
+                </div>
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="transfer-amount">Amount (₦)</label>
+                        <div class="input-prefix-wrapper">
+                            <span class="input-prefix">₦</span>
+                            <input type="number" id="transfer-amount" placeholder="0.00" min="0.01" step="0.01" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="transfer-date">Date</label>
+                        <input type="date" id="transfer-date" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="transfer-notes">Notes (Optional)</label>
+                    <input type="text" id="transfer-notes" placeholder="e.g. moving savings to fixed deposit">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('transfer-modal').classList.remove('active')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Transfer</button>
                 </div>
             </form>
         </div>

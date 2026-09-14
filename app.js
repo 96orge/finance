@@ -10,6 +10,7 @@ let state = {
     goals: [],          // Savings goals / sinking funds
     investments: { holdings: [], activity: [] }, // Stock/investment portfolio
     accounts: [],       // Cash accounts (bank / cash / mobile money)
+    transfers: [],      // Money moved between two cash accounts (excluded from income/expense totals)
     reviews: [],        // Monthly review reflection notes
     netWorthHistory: [], // [{ month:'YYYY-MM', value }] monthly net-worth snapshots
     settings: {}        // App-wide preferences (wantsMonthlyCap, usdRate, ...)
@@ -137,6 +138,7 @@ function migrateState() {
     if (!Array.isArray(state.investments.holdings)) state.investments.holdings = [];
     if (!Array.isArray(state.investments.activity)) state.investments.activity = [];
     if (!Array.isArray(state.accounts)) state.accounts = [];
+    if (!Array.isArray(state.transfers)) state.transfers = [];
     if (!Array.isArray(state.reviews)) state.reviews = [];
     if (!Array.isArray(state.netWorthHistory)) state.netWorthHistory = [];
     state.settings = Object.assign({}, DEFAULT_SETTINGS, state.settings || {});
@@ -1570,7 +1572,7 @@ document.getElementById('import-file-input').addEventListener('change', (e) => {
 });
 
 document.getElementById('btn-reset-data').addEventListener('click', () => {
-    if (confirm("CAUTION: This permanently deletes ALL your data — transactions, categories, budgets, accounts, income sources, bills, quick-adds, debts, goals, investments and reviews. Do you wish to proceed?")) {
+    if (confirm("CAUTION: This permanently deletes ALL your data — transactions, categories, budgets, accounts, transfers, income sources, bills, quick-adds, debts, goals, investments and reviews. Do you wish to proceed?")) {
         localStorage.removeItem('96orge_budget_state');
         state = {
             transactions: [],
@@ -1583,6 +1585,7 @@ document.getElementById('btn-reset-data').addEventListener('click', () => {
             goals: [],
             investments: { holdings: [], activity: [] },
             accounts: [],
+            transfers: [],
             reviews: [],
             netWorthHistory: [],
             settings: { ...DEFAULT_SETTINGS, activityDays: [] }
@@ -1716,10 +1719,18 @@ function accountById(id) {
 }
 
 function accountBalance(acc) {
-    return state.transactions.reduce((sum, tx) => {
+    const txBalance = state.transactions.reduce((sum, tx) => {
         if (tx.accountId !== acc.id) return sum;
         return sum + (tx.type === 'income' ? tx.amount : -tx.amount);
     }, acc.openingBalance || 0);
+    // Transfers live outside state.transactions so moving money between
+    // accounts never counts as real income/expense (savings rate, needs vs
+    // wants, etc. all read state.transactions only, so they stay accurate).
+    return state.transfers.reduce((sum, t) => {
+        if (t.fromAccountId === acc.id) return sum - t.amount;
+        if (t.toAccountId === acc.id) return sum + t.amount;
+        return sum;
+    }, txBalance);
 }
 
 function fillAccountSelect(select, selectedId) {
@@ -3491,6 +3502,7 @@ function sparklineSVG(values, w = 260, h = 44) {
 function renderNetWorthView() {
     renderNetWorthBreakdown();
     renderAccountsList();
+    renderTransfersHistory();
 }
 
 function renderNetWorthBreakdown() {
@@ -3620,6 +3632,92 @@ document.getElementById('account-form').addEventListener('submit', (e) => {
     updateDashboard();
     showToast('Account saved', 'success');
 });
+
+// --- Transfer funds between cash accounts ---
+const transferModal = document.getElementById('transfer-modal');
+
+function openTransferModal() {
+    const eligible = state.accounts.filter(a => !a.archived);
+    if (eligible.length < 2) {
+        showToast('Add at least two accounts before transferring funds', 'danger');
+        return;
+    }
+    const fromSelect = document.getElementById('transfer-from');
+    const toSelect = document.getElementById('transfer-to');
+    const optionsHtml = eligible.map(a => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join('');
+    fromSelect.innerHTML = optionsHtml;
+    toSelect.innerHTML = optionsHtml;
+    toSelect.selectedIndex = 1;
+    document.getElementById('transfer-amount').value = '';
+    document.getElementById('transfer-date').value = todayISO();
+    document.getElementById('transfer-notes').value = '';
+    transferModal.classList.add('active');
+}
+window.openTransferModal = openTransferModal;
+function closeTransferModal() { transferModal.classList.remove('active'); }
+
+document.getElementById('btn-transfer-funds').addEventListener('click', openTransferModal);
+
+document.getElementById('transfer-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fromAccountId = document.getElementById('transfer-from').value;
+    const toAccountId = document.getElementById('transfer-to').value;
+    const amount = parseFloat(document.getElementById('transfer-amount').value);
+    const date = document.getElementById('transfer-date').value;
+    const notes = document.getElementById('transfer-notes').value.trim();
+    if (fromAccountId === toAccountId) {
+        showToast('Choose two different accounts', 'danger');
+        return;
+    }
+    if (!date || isNaN(amount) || amount <= 0) {
+        showToast('Enter a valid amount and date', 'danger');
+        return;
+    }
+    state.transfers.push({ id: makeId('xfer'), fromAccountId, toAccountId, amount, date, notes });
+    touchStreak();
+    saveData();
+    closeTransferModal();
+    renderNetWorthView();
+    updateDashboard();
+    showToast('Funds transferred', 'success');
+});
+
+window.deleteTransfer = function(id) {
+    if (!confirm('Delete this transfer? Both account balances will be adjusted back.')) return;
+    state.transfers = state.transfers.filter(t => t.id !== id);
+    saveData();
+    renderNetWorthView();
+    updateDashboard();
+    showToast('Transfer removed', 'success');
+};
+
+function renderTransfersHistory() {
+    const wrap = document.getElementById('transfers-history-wrap');
+    const box = document.getElementById('transfers-history');
+    if (!wrap || !box) return;
+    if (state.transfers.length === 0) {
+        wrap.hidden = true;
+        box.innerHTML = '';
+        return;
+    }
+    wrap.hidden = false;
+    const sorted = [...state.transfers].sort((a, b) => new Date(b.date) - new Date(a.date));
+    box.innerHTML = sorted.map(t => {
+        const from = accountById(t.fromAccountId);
+        const to = accountById(t.toAccountId);
+        return `
+            <div class="transfer-row">
+                <div class="transfer-icon"><i class="fa-solid fa-right-left"></i></div>
+                <div class="transfer-title">
+                    <span class="transfer-name">${escapeHtml(from ? from.name : 'Deleted account')} &rarr; ${escapeHtml(to ? to.name : 'Deleted account')}</span>
+                    <span class="transfer-meta">${shortDate(t.date)}${t.notes ? ` &bull; ${escapeHtml(t.notes)}` : ''}</span>
+                </div>
+                <span class="transfer-amount">${formatNaira(t.amount)}</span>
+                <button class="btn-action btn-action-delete" onclick="deleteTransfer('${t.id}')" title="Delete"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+        `;
+    }).join('');
+}
 
 // ============================================================================
 //  Learn — money habits, wealth creation, books & business/income insight
