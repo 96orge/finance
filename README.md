@@ -1,4 +1,4 @@
-# 96orgeBudget
+# Steady
 
 A premium-looking personal finance visualizer and budgeting app. It runs entirely
 in the browser — no backend, no build step, no account. All data lives in your
@@ -65,7 +65,8 @@ Push to a repo and enable **GitHub Pages** on the default branch. No configurati
 
 ## Data & privacy
 
-Everything is stored locally in your browser under the `96orge_budget_state` key.
+Everything is stored locally in your browser under the `96orge_budget_state` key
+(a legacy internal name kept for backward compatibility with existing saved data).
 Nothing is sent anywhere. Clearing site data or switching browsers/devices loses it —
 use **Data & Backup → Export** to keep a copy.
 

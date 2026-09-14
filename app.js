@@ -1535,7 +1535,7 @@ document.getElementById('btn-export-data').addEventListener('click', () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `96orgebudget_backup_${new Date().toISOString().split('T')[0]}.json`);
+    downloadAnchor.setAttribute("download", `steady_backup_${new Date().toISOString().split('T')[0]}.json`);
     document.body.appendChild(downloadAnchor);
     downloadAnchor.click();
     downloadAnchor.remove();
@@ -1624,7 +1624,7 @@ document.getElementById('btn-export-transactions-csv').addEventListener('click',
             rows.push([tx.date, tx.type, catById(tx.categoryId).name, tx.title, tx.amount,
                        acc ? acc.name : '', tx.notes || '']);
         });
-    csvDownload(`96orgebudget_transactions_${todayISO()}.csv`, rows);
+    csvDownload(`steady_transactions_${todayISO()}.csv`, rows);
     showToast('Transactions exported to CSV', 'success');
 });
 
@@ -1637,7 +1637,7 @@ document.getElementById('btn-export-investments-csv').addEventListener('click', 
             rows.push([act.date, h.name || '', h.ticker || '', act.type, act.units, act.pricePerUnit,
                        act.amount, act.fee || 0, Math.round(act.realizedPL || 0), h.currency || 'NGN']);
         });
-    csvDownload(`96orgebudget_investments_${todayISO()}.csv`, rows);
+    csvDownload(`steady_investments_${todayISO()}.csv`, rows);
     showToast('Investment activity exported to CSV', 'success');
 });
 
