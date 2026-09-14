@@ -525,6 +525,10 @@ body::after {
     flex-grow: 1;
     min-height: 100vh;
     padding: 2.5rem 3rem;
+    /* As a flex item this defaults to min-width:auto, which makes the whole page
+       container grow to the widest thing inside it — one wide row then pushes every
+       card on the page past the screen edge. 0 lets content wrap/scroll instead. */
+    min-width: 0;
 }
 
 /* Header Component */
@@ -1511,7 +1515,9 @@ textarea:focus {
 /* Categories Customizer UI view */
 .tabs-sub {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--space-2);
+    row-gap: var(--space-4); /* room for the active tab's underline when rows wrap */
     margin: 1.5rem 0;
     border-bottom: 1px solid var(--border-glass);
     padding-bottom: var(--space-3);
@@ -2176,6 +2182,8 @@ h3 + .section-desc { margin-top: 0; }
 }
 
 .quick-add-strip:empty { display: none; }
+/* .quick-add-strip's own display:flex would otherwise beat the [hidden] attribute */
+.quick-add-strip[hidden] { display: none; }
 
 .quick-add-tile {
     display: flex;
