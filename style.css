@@ -2238,6 +2238,7 @@ textarea:focus {
 
 .income-source-head {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--space-3);
 }
@@ -2250,7 +2251,7 @@ textarea:focus {
     border-radius: 12px;
 }
 
-.income-source-title { display: flex; flex-direction: column; flex: 1; }
+.income-source-title { display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .income-source-name { font-weight: 600; }
 .income-source-meta { font-size: 0.78rem; color: var(--text-muted); }
 .income-source-amount { font-weight: 700; color: var(--color-success); }
@@ -2260,6 +2261,7 @@ textarea:focus {
 /* --- Quick-add manager rows --- */
 .quick-add-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.7rem;
     padding: 0.6rem 0;
@@ -2277,7 +2279,7 @@ textarea:focus {
     font-size: 0.85rem;
 }
 
-.quick-add-row-label { font-weight: 600; }
+.quick-add-row-label { font-weight: 600; flex: 1 1 auto; min-width: 0; }
 .quick-add-row-meta { font-size: 0.78rem; color: var(--text-muted); }
 .quick-add-row-amount { margin-left: auto; font-weight: 600; }
 
@@ -2359,11 +2361,14 @@ textarea:focus {
 
 .debt-card-head {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: flex-start;
     gap: var(--space-3);
     margin-bottom: 0.6rem;
 }
+
+.debt-card-head > div:first-child { flex: 1 1 auto; min-width: 0; }
 
 .debt-card-name { font-weight: 600; display: block; }
 .debt-card-party { font-size: 0.78rem; color: var(--text-muted); }
@@ -2511,6 +2516,7 @@ textarea:focus {
 
 .goal-card-head {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--space-3);
     margin-bottom: 0.7rem;
@@ -2525,7 +2531,7 @@ textarea:focus {
     font-size: var(--text-base);
 }
 
-.goal-card-title { display: flex; flex-direction: column; flex: 1; }
+.goal-card-title { display: flex; flex-direction: column; flex: 1; min-width: 0; }
 .goal-card-name { font-weight: 600; }
 .goal-card-meta { font-size: 0.76rem; color: var(--text-muted); }
 .goal-card-pct { font-weight: 700; }
@@ -2610,10 +2616,13 @@ textarea:focus {
 
 .holding-head {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: flex-start;
     gap: var(--space-3);
 }
+
+.holding-title { flex: 1 1 auto; min-width: 0; }
 
 .holding-name { font-weight: 600; }
 .holding-ticker {
@@ -2657,11 +2666,14 @@ textarea:focus {
 
 .subscription-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.7rem;
     padding: 0.55rem 0;
     border-bottom: 1px solid var(--border-glass);
 }
+
+.subscription-name { flex: 1 1 auto; min-width: 0; }
 .subscription-row:last-of-type { border-bottom: none; }
 
 .subscription-icon {
