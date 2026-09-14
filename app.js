@@ -37,6 +37,9 @@ function applyTheme() {
     document.querySelectorAll('[data-theme-choice]').forEach(btn => {
         btn.setAttribute('aria-pressed', String(btn.dataset.themeChoice === (t || 'system')));
     });
+    const effective = (t === 'light' || t === 'dark') ? t : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) metaTheme.setAttribute('content', effective === 'light' ? '#c98f16' : '#e0a92e');
     requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theme-switching')));
 }
 
@@ -4227,3 +4230,10 @@ window.addEventListener('DOMContentLoaded', () => {
     labelIconButtons(document);
     installModalA11y();
 });
+
+// --- PWA: register the service worker (app shell caching + offline support) ---
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+}
