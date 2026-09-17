@@ -4,7 +4,7 @@ Thanks for helping out. Steady is a personal finance tracker that runs entirely 
 
 ## Ground rules
 
-- **Nothing leaves the user's device.** This is the app's core promise. Don't add analytics, trackers, error reporting, or calls to any API or server. Loading a library from a CDN when the page opens (as we do for Chart.js, Font Awesome and Google Fonts) is fine; sending data anywhere is not. Pull requests that send data off the device won't be merged.
+- **Nothing leaves the user's device.** This is the app's core promise. Don't add analytics, trackers, error reporting, or calls to any API or server. That includes CDN links: third-party files live in [`vendor/`](vendor/README.md), so the app works offline and never contacts another server. The tests fail if a page requests anything from another server, and pull requests that send data off the device won't be merged.
 - **Keep it build-free.** The site has to keep working as plain files served by GitHub Pages. npm is only used for the local server and the tests; the app itself must never depend on it.
 - **Don't rename the storage key.** Saved data lives under `96orge_budget_state` (a legacy name). Renaming it would wipe every existing user's data. When you add something new to `state`, give it a default in `migrateState()` in `app.js` so older saved data upgrades cleanly.
 - **Check phone widths.** Most people use Steady on a phone. Try your change at about 360–412px wide; your browser's device mode is fine for this.
@@ -32,15 +32,12 @@ npm run test:ui                   # interactive mode, handy for debugging
 
 | File | What it checks |
 |---|---|
-| `tests/navigation.spec.js` | Every section opens without script errors: with data, on first visit, and after "Clear All Data" |
+| `tests/navigation.spec.js` | Every section opens without script errors or requests to other servers: with data, on first visit, and after "Clear All Data" |
 | `tests/layout.spec.js` | Nothing spills past the right edge on 360px and 412px screens |
 | `tests/money.spec.js` | Net worth, transfers between accounts, and USD→₦ conversion |
-| `tests/pwa.spec.js` | The manifest, the icons, and working offline |
+| `tests/pwa.spec.js` | The manifest, the icons, and working offline, fonts and charts included |
 
 Tests load their data straight into `localStorage` (see `tests/helpers.js`) and freeze the clock at 15 September 2026, so monthly totals don't change from day to day. If you fix a bug, a test that would have caught it is very welcome.
-
-So a slow CDN can't fail the tests, `tests/fixtures.js` serves the CDN files locally: Chart.js comes from the `chart.js` dev dependency, while Font Awesome and the Google Font are stubbed out. That means icons and fonts look different in test screenshots, so check visual changes in a real browser. If you change the Chart.js version in `index.html`, update the `chart.js` dev dependency to match.
-
 ## Where things live
 
 | File | Contents |
@@ -48,8 +45,9 @@ So a slow CDN can't fail the tests, `tests/fixtures.js` serves the CDN files loc
 | `index.html` | All the markup, including every page ("view") and modal |
 | `app.js` | All the logic. `switchToTab()` shows a page; most pages have a `render…View()` function |
 | `style.css` | All the styles. Design tokens (CSS custom properties) at the top; the light and dark themes override them |
-| `sw.js` | The service worker: network-first for the app's own files, cache-first for CDN libraries. If you add a file the app needs offline, add it to `SHELL_ASSETS` |
+| `sw.js` | The service worker. The app's own code is network-first; vendor files and icons are served from the cache and refreshed in the background. If you add a file the app needs offline, add it to `SHELL_ASSETS` |
 | `manifest.webmanifest`, `icons/` | What phones use when the app is installed to the home screen |
+| `vendor/` | Third-party files (Chart.js, Font Awesome, the Outfit font) with their licences. See [`vendor/README.md`](vendor/README.md) for sources and how to upgrade |
 
 To add a new page, you'll touch the desktop sidebar, the mobile side drawer and the "More" list in `index.html`, add a `<div id="view-…" class="app-view">`, and add it to `TAB_TITLES` and `switchToTab()` in `app.js`.
 

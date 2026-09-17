@@ -1,5 +1,5 @@
-import { test, expect } from './fixtures.js';
-import { openApp, goToTab, trackPageErrors, RICH_STATE, EMPTY_STATE } from './helpers.js';
+import { test, expect } from '@playwright/test';
+import { openApp, goToTab, trackPageErrors, trackExternalRequests, RICH_STATE, EMPTY_STATE } from './helpers.js';
 
 const SECTIONS = {
     dashboard: 'Dashboard',
@@ -21,15 +21,17 @@ const STARTING_POINTS = [
 ];
 
 for (const [label, state] of STARTING_POINTS) {
-    test(`every section opens without script errors ${label}`, async ({ page }) => {
+    test(`every section opens without script errors or outside requests ${label}`, async ({ page, baseURL }) => {
         test.slow(); // tours all ten sections through the real menus
         const errors = trackPageErrors(page);
+        const external = trackExternalRequests(page, baseURL);
         await openApp(page, state);
         for (const [tab, title] of Object.entries(SECTIONS)) {
             await goToTab(page, tab);
             await expect(page.locator('#page-title')).toHaveText(title);
         }
         expect(errors).toEqual([]);
+        expect(external, 'requests to other servers').toEqual([]);
     });
 }
 

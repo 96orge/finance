@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures.js';
+import { test, expect } from '@playwright/test';
 import { openApp, RICH_STATE } from './helpers.js';
 
 const VIEWS = ['dashboard', 'transactions', 'income', 'debts', 'goals', 'investments', 'networth', 'categories', 'learn', 'settings', 'more'];

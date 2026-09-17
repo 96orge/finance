@@ -10,7 +10,6 @@
     "test:ui": "playwright test --ui"
   },
   "devDependencies": {
-    "@playwright/test": "1.63.0",
-    "chart.js": "4.5.1"
+    "@playwright/test": "1.63.0"
   }
 }
