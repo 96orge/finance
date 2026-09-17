@@ -10,6 +10,12 @@ Thumbs.db
 *.log
 node_modules/
 
+# Playwright test output
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 # Python bytecode (ui-ux-pro-max skill)
 __pycache__/
 *.pyc

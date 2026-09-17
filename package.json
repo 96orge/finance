@@ -1,0 +1,16 @@
+{
+  "name": "steady",
+  "private": true,
+  "description": "Steady — a private, offline-capable personal finance tracker. Plain static site; npm is only used for the dev server and tests.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "chart.js": "4.5.1"
+  }
+}
