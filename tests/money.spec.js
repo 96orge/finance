@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures.js';
+import { test, expect } from '@playwright/test';
 import { openApp, goToTab } from './helpers.js';
 
 // The maths doesn't depend on screen size, so these run once (desktop).

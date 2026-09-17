@@ -58,8 +58,8 @@ and it can be installed to your phone's home screen and used offline.
 ## Tech
 
 - Vanilla HTML, CSS and JavaScript — no framework, no build step.
-- [Chart.js](https://www.chartjs.org/) via CDN for the charts.
-- Font Awesome + Google Fonts (Outfit) via CDN.
+- [Chart.js](https://www.chartjs.org/) for the charts, Font Awesome for icons and the Outfit
+  font — all hosted in [`vendor/`](vendor/README.md), so nothing loads from other servers.
 - [Playwright](https://playwright.dev) end-to-end tests, run on every pull request.
 
 ## Running locally
@@ -88,7 +88,8 @@ Push to a repo and enable **GitHub Pages** on the default branch. No configurati
 
 Everything is stored locally in your browser under the `96orge_budget_state` key
 (a legacy internal name kept for backward compatibility with existing saved data).
-Nothing is sent anywhere. Clearing site data or switching browsers/devices loses it —
+Nothing is sent anywhere, and the app doesn't load anything from other servers either.
+Clearing site data or switching browsers/devices loses it —
 use **Data & Backup → Export** to keep a copy.
 
 ## License

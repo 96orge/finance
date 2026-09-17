@@ -14,14 +14,11 @@
             } catch (e) { /* no-op */ }
         })();
     </script>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Premium Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js CDN — pinned so a new major release can't change the live app unannounced -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"></script>
+    <!-- Third-party files are hosted in vendor/ (see vendor/README.md), so the app never waits on
+         another server, works offline, and loads nothing from outside its own site -->
+    <link rel="stylesheet" href="vendor/outfit/outfit.css">
+    <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css">
+    <script src="vendor/chart.js/chart.umd.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <!-- PWA: manifest, icons, theme color -->
     <link rel="manifest" href="manifest.webmanifest">

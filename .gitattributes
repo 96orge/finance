@@ -1,0 +1,6 @@
+# Keep third-party files byte-for-byte identical to their upstream releases (no line-ending
+# conversion), and don't try to show line diffs for minified code.
+vendor/**/*.min.js -text -diff
+vendor/**/*.min.css -text -diff
+*.woff2 binary
+*.png binary

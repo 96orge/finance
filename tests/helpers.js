@@ -1,4 +1,4 @@
-import { expect } from './fixtures.js';
+import { expect } from '@playwright/test';
 
 // Month-based totals depend on "today", so every test runs on the same fixed date.
 export const FIXED_NOW = new Date('2026-09-15T10:00:00+01:00');
@@ -37,6 +37,21 @@ export function trackPageErrors(page) {
     const errors = [];
     page.on('pageerror', (err) => errors.push(err.message));
     return errors;
+}
+
+/**
+ * Collect every request the page makes to another server. Steady promises that nothing
+ * leaves the user's device, and everything it needs is hosted in this repo, so this should
+ * always be empty.
+ */
+export function trackExternalRequests(page, baseURL) {
+    const ownOrigin = new URL(baseURL).origin;
+    const external = [];
+    page.on('request', (request) => {
+        const url = new URL(request.url());
+        if (url.protocol.startsWith('http') && url.origin !== ownOrigin) external.push(request.url());
+    });
+    return external;
 }
 
 // What storage looks like right after Data & Backup → "Clear All Data".
