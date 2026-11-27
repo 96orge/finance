@@ -67,6 +67,10 @@
                 <i class="fa-solid fa-chart-pie"></i>
                 <span>Dashboard</span>
             </button>
+            <button class="nav-btn drawer-nav-btn" data-tab="assistant">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Assistant</span>
+            </button>
             <button class="nav-btn drawer-nav-btn" data-tab="transactions">
                 <i class="fa-solid fa-list-check"></i>
                 <span>Transactions</span>
@@ -129,6 +133,10 @@
                 <button class="nav-btn active" data-tab="dashboard">
                     <i class="fa-solid fa-chart-pie"></i>
                     <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-tab="assistant">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Assistant</span>
                 </button>
                 <button class="nav-btn" data-tab="transactions">
                     <i class="fa-solid fa-list-check"></i>
@@ -685,7 +693,7 @@
                                 <i class="fa-solid fa-plus"></i> Add Holding
                             </button>
                         </div>
-                        <p class="section-desc">Track your stocks and funds. Update the current price yourself; the app works out value and return. USD holdings are converted with the ₦/$ rate you set.</p>
+                        <p class="section-desc">Track your stocks and funds. Refresh prices online or type them in yourself; the app works out value and return. USD holdings are converted with the ₦/$ rate.</p>
                         <div id="portfolio-summary"></div>
                     </div>
                     <div class="glass-card margin-top">
@@ -747,12 +755,69 @@
                     </div>
                 </div>
 
+                <!-- VIEW: ASSISTANT (Claude: smart add + ask about your money). Wired up in online.js -->
+                <div id="view-assistant" class="app-view">
+                    <div class="glass-card" id="assistant-setup-card" hidden>
+                        <h2>Set up the assistant</h2>
+                        <p class="section-desc">The assistant uses Claude, Anthropic's AI model, with your own API key. Add a key under <strong>Data &amp; Backup &rarr; Online features</strong> to turn it on.</p>
+                        <button class="btn btn-primary" type="button" id="assistant-setup-btn">
+                            <i class="fa-solid fa-key"></i> Add an API key
+                        </button>
+                    </div>
+
+                    <div class="glass-card" id="smart-add-card">
+                        <div class="widget-header"><h2>Smart add</h2></div>
+                        <p class="section-desc">Type what you spent or earned, paste a bank alert (SMS or email), or add a photo of a receipt. Claude drafts the transactions; nothing is saved until you check them and press <strong>Save</strong>.</p>
+                        <form id="smart-add-form" class="smart-add-form">
+                            <label for="smart-add-text" class="sr-only">What happened?</label>
+                            <textarea id="smart-add-text" rows="3" placeholder="e.g. 3,500 suya yesterday, 15k data from GTB, salary 850k came in today"></textarea>
+                            <div class="smart-add-actions">
+                                <label for="smart-add-photo" class="btn-text smart-add-photo-label">
+                                    <i class="fa-solid fa-camera" aria-hidden="true"></i> <span id="smart-add-photo-name">Add receipt photo</span>
+                                </label>
+                                <input type="file" id="smart-add-photo" accept="image/*" hidden>
+                                <button type="submit" class="btn btn-primary" id="smart-add-submit">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Draft transactions
+                                </button>
+                            </div>
+                        </form>
+                        <div id="smart-add-results" class="smart-add-results" aria-live="polite"></div>
+                    </div>
+
+                    <div class="glass-card margin-top" id="ask-card">
+                        <div class="widget-header">
+                            <h2>Ask about your money</h2>
+                            <button type="button" class="btn-text" id="ask-clear" hidden>New chat</button>
+                        </div>
+                        <p class="section-desc">Claude sees a summary of your accounts, spending, budgets, debts, goals and investments, so it answers with your real numbers.</p>
+                        <div class="ask-suggestions" id="ask-suggestions">
+                            <button type="button" class="chip-btn">Where is my money going this month?</button>
+                            <button type="button" class="chip-btn">How can I save &#8358;50k more next month?</button>
+                            <button type="button" class="chip-btn">Should I pay down debt or invest first?</button>
+                            <button type="button" class="chip-btn">Am I on track for my goals?</button>
+                        </div>
+                        <div class="ask-thread" id="ask-thread" aria-live="polite"></div>
+                        <form id="ask-form" class="ask-form">
+                            <label for="ask-input" class="sr-only">Your question</label>
+                            <input type="text" id="ask-input" placeholder="Ask anything about your finances" autocomplete="off">
+                            <button type="submit" class="btn btn-primary" id="ask-submit" aria-label="Send">
+                                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- VIEW: MORE (mobile menu) -->
                 <div id="view-more" class="app-view">
                     <div class="glass-card">
                         <h2>More</h2>
                         <p class="section-desc">Everything that doesn't fit the bottom bar.</p>
                         <div class="more-menu-list">
+                            <button class="more-menu-btn" data-tab="assistant">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                <span>Assistant</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
                             <button class="more-menu-btn" data-tab="income">
                                 <i class="fa-solid fa-money-bill-trend-up"></i>
                                 <span>Income &amp; Recurring</span>
@@ -859,8 +924,97 @@
                         </div>
 
                         <div class="settings-info-card glass-card">
-                            <h3><i class="fa-solid fa-circle-question"></i> Client-Side Sandbox</h3>
-                            <p>This web application is built strictly as a client-side solution. It connects to no remote servers, meaning your financial data is fully private and resides purely in your browser's local storage. This application can be committed directly to your repository and hosted on <strong>GitHub Pages</strong> without any server-side dependencies or database configurations required!</p>
+                            <h3><i class="fa-solid fa-circle-question"></i> Where your data lives</h3>
+                            <p>Your data is saved in this browser. Steady only goes online for the features you switch on below. Keys and passphrases you enter stay on this device: they are never included in exports or cloud backups.</p>
+                        </div>
+                    </div>
+
+                    <div class="glass-card settings-card margin-top" id="online-settings">
+                        <h2>Online features</h2>
+                        <p class="section-desc">Each feature is off until you set it up, and each one says exactly what it sends.</p>
+
+                        <div class="online-feature">
+                            <div class="online-feature-head">
+                                <span class="option-icon text-primary"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                                <div>
+                                    <h3>AI assistant (Claude) <span class="online-status" id="ai-status"></span></h3>
+                                    <p>Smart add from text, bank alerts and receipt photos; answers about your money; NGX price look-ups. <strong>Sends</strong> what you type or photograph and, for questions, a summary of your finances, to Anthropic. Uses your own <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">Anthropic API key</a>, and usage is billed to that key.</p>
+                                </div>
+                            </div>
+                            <form class="online-feature-form" id="ai-settings-form">
+                                <div class="form-row-2">
+                                    <div class="form-group">
+                                        <label for="ai-key">API key</label>
+                                        <input type="password" id="ai-key" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="ai-model">Model</label>
+                                        <select id="ai-model">
+                                            <option value="claude-opus-5-5">Claude Opus 5.5: most capable (default)</option>
+                                            <option value="claude-sonnet-5-5">Claude Sonnet 5.5: faster, about half the cost</option>
+                                            <option value="claude-haiku-5-5">Claude Haiku 5.5: fastest, cheapest</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="online-feature-actions">
+                                    <button type="submit" class="btn btn-primary">Save</button>
+                                    <button type="button" class="btn-text" id="ai-forget">Remove key</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="online-feature">
+                            <div class="online-feature-head">
+                                <span class="option-icon text-primary"><i class="fa-solid fa-chart-line"></i></span>
+                                <div>
+                                    <h3>Live prices <span class="online-status" id="prices-status"></span></h3>
+                                    <p>The &#8358;/$ rate updates from <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">ExchangeRate-API</a> when you hold US stocks; no key is needed and nothing about you is sent. US stock prices come from <a href="https://finnhub.io/register" target="_blank" rel="noopener">Finnhub</a> with a free key, which <strong>sends</strong> only your US tickers.</p>
+                                </div>
+                            </div>
+                            <form class="online-feature-form" id="prices-settings-form">
+                                <label class="online-toggle">
+                                    <input type="checkbox" id="fx-auto">
+                                    <span>Update the &#8358;/$ rate automatically</span>
+                                </label>
+                                <div class="form-group">
+                                    <label for="finnhub-key">Finnhub API key <span class="label-hint">(optional, for US stocks)</span></label>
+                                    <input type="password" id="finnhub-key" placeholder="Paste your free Finnhub key" autocomplete="off" spellcheck="false">
+                                </div>
+                                <div class="online-feature-actions">
+                                    <button type="submit" class="btn btn-primary">Save</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="online-feature">
+                            <div class="online-feature-head">
+                                <span class="option-icon text-primary"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+                                <div>
+                                    <h3>Encrypted cloud backup &amp; sync <span class="online-status" id="sync-status"></span></h3>
+                                    <p>Keeps an encrypted copy of your data in a secret GitHub Gist, so you can restore it or use Steady on another device. Your data is encrypted on this device with your passphrase before it is sent, so GitHub only ever sees scrambled text. <strong>If you forget the passphrase, the backup can't be opened.</strong> Needs a <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub token</a> with read and write access to Gists only.</p>
+                                </div>
+                            </div>
+                            <form class="online-feature-form" id="sync-settings-form">
+                                <div class="form-row-2">
+                                    <div class="form-group">
+                                        <label for="sync-token">GitHub token</label>
+                                        <input type="password" id="sync-token" placeholder="github_pat_..." autocomplete="off" spellcheck="false">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sync-passphrase">Encryption passphrase</label>
+                                        <input type="password" id="sync-passphrase" placeholder="At least 10 characters" autocomplete="new-password">
+                                    </div>
+                                </div>
+                                <label class="online-toggle">
+                                    <input type="checkbox" id="sync-auto">
+                                    <span>Back up automatically after changes, and offer newer backups made on other devices</span>
+                                </label>
+                                <div class="online-feature-actions">
+                                    <button type="submit" class="btn btn-primary">Save &amp; back up now</button>
+                                    <button type="button" class="btn btn-outline" id="sync-restore">Restore from backup</button>
+                                    <button type="button" class="btn-text" id="sync-forget">Disconnect</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -1702,5 +1856,6 @@
     <div class="toast-container" id="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
 
     <script src="app.js"></script>
+    <script src="online.js"></script>
 </body>
 </html>

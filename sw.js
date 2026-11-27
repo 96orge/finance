@@ -1,10 +1,10 @@
 // Bump when SHELL_ASSETS or the caching strategy changes; old caches are deleted on activate.
-const CACHE_VERSION = 'steady-v3';
+const CACHE_VERSION = 'steady-v4';
 const SHELL_CACHE = `${CACHE_VERSION}-shell`;
 
 // Saved on install, so the app works offline straight after the first visit.
 const SHELL_ASSETS = [
-  './', 'index.html', 'app.js', 'style.css',
+  './', 'index.html', 'app.js', 'online.js', 'style.css',
   'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png',
   'vendor/source-sans-3/source-sans-3.css', 'vendor/source-sans-3/source-sans-3-latin.woff2', 'vendor/source-sans-3/source-sans-3-latin-ext.woff2',

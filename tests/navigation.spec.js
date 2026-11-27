@@ -3,6 +3,7 @@ import { openApp, goToTab, trackPageErrors, trackExternalRequests, RICH_STATE, E
 
 const SECTIONS = {
     dashboard: 'Dashboard',
+    assistant: 'Assistant',
     transactions: 'Transactions',
     income: 'Income & Recurring',
     debts: 'Debts & Lending',
@@ -22,7 +23,7 @@ const STARTING_POINTS = [
 
 for (const [label, state] of STARTING_POINTS) {
     test(`every section opens without script errors or outside requests ${label}`, async ({ page, baseURL }) => {
-        test.slow(); // tours all ten sections through the real menus
+        test.slow(); // tours all eleven sections through the real menus
         const errors = trackPageErrors(page);
         const external = trackExternalRequests(page, baseURL);
         await openApp(page, state);

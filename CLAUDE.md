@@ -2,6 +2,8 @@
 
 Plain HTML/CSS/JS personal finance PWA (no framework, no build step). Run `npm start` to serve, `npm test` for the Playwright suite. Third-party files are self-hosted in `vendor/` — never load anything from a CDN at runtime.
 
+Online features (Claude assistant, live prices, encrypted Gist backup) live in `online.js` and are opt-in. Keep keys and tokens in the `steady_connections` storage entry, never in `state`; say in the UI what each feature sends; mock every service in tests. Claude calls use the vendored Anthropic SDK (`vendor/anthropic-sdk/`), default model `claude-opus-5-5`.
+
 ## Brand
 
 Full guide: the `brand` skill (`.claude/skills/brand/SKILL.md`). In short:
