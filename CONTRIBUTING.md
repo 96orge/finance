@@ -4,7 +4,7 @@ Thanks for helping out. Steady is a personal finance tracker that runs entirely 
 
 ## Ground rules
 
-- **Nothing leaves the user's device.** This is the app's core promise. Don't add analytics, trackers, error reporting, or calls to any API or server. That includes CDN links: third-party files live in [`vendor/`](vendor/README.md), so the app works offline and never contacts another server. The tests fail if a page requests anything from another server, and pull requests that send data off the device won't be merged.
+- **Nothing leaves the device unless the user switches it on.** Online features (the assistant, live prices, cloud backup) live in `online.js`, are opt-in, and say in the UI exactly what they send and where. Don't add analytics, trackers or error reporting. Keys and tokens belong in the `steady_connections` storage entry, never in `state`, so they stay out of exports, backups and prompts. Third-party files live in [`vendor/`](vendor/README.md) rather than on CDNs. With nothing set up, the tests fail if a page requests anything from another server; tests for online features mock every service (`tests/online.spec.js`).
 - **Keep it build-free.** The site has to keep working as plain files served by GitHub Pages. npm is only used for the local server and the tests; the app itself must never depend on it.
 - **Don't rename the storage key.** Saved data lives under `96orge_budget_state` (a legacy name). Renaming it would wipe every existing user's data. When you add something new to `state`, give it a default in `migrateState()` in `app.js` so older saved data upgrades cleanly.
 - **Check phone widths.** Most people use Steady on a phone. Try your change at about 360–412px wide; your browser's device mode is fine for this.
@@ -36,6 +36,7 @@ npm run test:ui                   # interactive mode, handy for debugging
 | `tests/layout.spec.js` | Nothing spills past the right edge on 360px and 412px screens |
 | `tests/money.spec.js` | Net worth, transfers between accounts, and USD→₦ conversion |
 | `tests/pwa.spec.js` | The manifest, the icons, and working offline, fonts and charts included |
+| `tests/online.spec.js` | Live ₦/$ rate, smart add, the money Q&A, encrypted backup and restore, and keys staying out of saved data. All services are mocked |
 
 Tests load their data straight into `localStorage` (see `tests/helpers.js`) and freeze the clock at 15 September 2026, so monthly totals don't change from day to day. If you fix a bug, a test that would have caught it is very welcome.
 ## Where things live
@@ -44,6 +45,7 @@ Tests load their data straight into `localStorage` (see `tests/helpers.js`) and 
 |---|---|
 | `index.html` | All the markup, including every page ("view") and modal |
 | `app.js` | All the logic. `switchToTab()` shows a page; most pages have a `render…View()` function |
+| `online.js` | The opt-in online features: live prices, the Claude assistant, encrypted cloud backup & sync |
 | `style.css` | All the styles. Design tokens (CSS custom properties) at the top; the light and dark themes override them |
 | `sw.js` | The service worker. The app's own code is network-first; vendor files and icons are served from the cache and refreshed in the background. If you add a file the app needs offline, add it to `SHELL_ASSETS` |
 | `manifest.webmanifest`, `icons/` | What phones use when the app is installed to the home screen |

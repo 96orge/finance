@@ -5,15 +5,27 @@ export const FIXED_NOW = new Date('2026-09-15T10:00:00+01:00');
 
 const STORAGE_KEY = '96orge_budget_state';
 
+const CONNECTIONS_KEY = 'steady_connections';
+
 /**
  * Open the app with `state` pre-loaded into localStorage.
  * Pass `null` to leave storage empty — a first-time visitor, who gets the built-in sample data.
+ *
+ * `connections` sets up the online features (see online.js). By default the live ₦/$ rate is
+ * switched off, so money totals don't depend on today's exchange rate and nothing goes online.
  */
-export async function openApp(page, state) {
+export async function openApp(page, state, { connections = { fxAuto: false } } = {}) {
     await page.clock.setFixedTime(FIXED_NOW);
+    await page.addInitScript(([key, c]) => {
+        // Only on first load, so a reload (e.g. after restoring a backup) keeps what the app saved.
+        if (!sessionStorage.getItem('test-seeded')) localStorage.setItem(key, JSON.stringify(c));
+    }, [CONNECTIONS_KEY, connections]);
     if (state) {
-        await page.addInitScript(([key, s]) => localStorage.setItem(key, JSON.stringify(s)), [STORAGE_KEY, state]);
+        await page.addInitScript(([key, s]) => {
+            if (!sessionStorage.getItem('test-seeded')) localStorage.setItem(key, JSON.stringify(s));
+        }, [STORAGE_KEY, state]);
     }
+    await page.addInitScript(() => sessionStorage.setItem('test-seeded', '1'));
     await page.goto('/');
     await expect(page.locator('#page-title')).toHaveText('Dashboard');
 }
@@ -40,9 +52,9 @@ export function trackPageErrors(page) {
 }
 
 /**
- * Collect every request the page makes to another server. Steady promises that nothing
- * leaves the user's device, and everything it needs is hosted in this repo, so this should
- * always be empty.
+ * Collect every request the page makes to another server. Steady only goes online for the
+ * features the user sets up (online.js), and everything else it needs is hosted in this repo,
+ * so with nothing set up this should always be empty.
  */
 export function trackExternalRequests(page, baseURL) {
     const ownOrigin = new URL(baseURL).origin;
