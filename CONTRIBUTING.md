@@ -28,6 +28,7 @@ The tests use [Playwright](https://playwright.dev) and run the app in a real Chr
 npx playwright install chromium   # first time only
 npm test                          # run everything
 npm run test:ui                   # interactive mode, handy for debugging
+PORT=4180 npm test                # use another port, e.g. to test two checkouts at once
 ```
 
 | File | What it checks |
