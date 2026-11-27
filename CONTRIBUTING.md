@@ -47,7 +47,7 @@ Tests load their data straight into `localStorage` (see `tests/helpers.js`) and 
 | `style.css` | All the styles. Design tokens (CSS custom properties) at the top; the light and dark themes override them |
 | `sw.js` | The service worker. The app's own code is network-first; vendor files and icons are served from the cache and refreshed in the background. If you add a file the app needs offline, add it to `SHELL_ASSETS` |
 | `manifest.webmanifest`, `icons/` | What phones use when the app is installed to the home screen |
-| `vendor/` | Third-party files (Chart.js, Font Awesome, the Outfit font) with their licences. See [`vendor/README.md`](vendor/README.md) for sources and how to upgrade |
+| `vendor/` | Third-party files (Chart.js, Font Awesome, the Poppins and Source Sans 3 fonts) with their licences. See [`vendor/README.md`](vendor/README.md) for sources and how to upgrade |
 
 To add a new page, you'll touch the desktop sidebar, the mobile side drawer and the "More" list in `index.html`, add a `<div id="view-…" class="app-view">`, and add it to `TAB_TITLES` and `switchToTab()` in `app.js`.
 

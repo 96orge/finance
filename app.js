@@ -39,7 +39,7 @@ function applyTheme() {
     });
     const effective = (t === 'light' || t === 'dark') ? t : (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
     const metaTheme = document.querySelector('meta[name="theme-color"]');
-    if (metaTheme) metaTheme.setAttribute('content', effective === 'light' ? '#c98f16' : '#e0a92e');
+    if (metaTheme) metaTheme.setAttribute('content', '#6B4226' /* Saddle top bar, both themes */);
     requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theme-switching')));
 }
 
@@ -58,12 +58,12 @@ document.querySelectorAll('[data-theme-choice]').forEach(btn => {
 function chartTheme() {
     const cs = getComputedStyle(document.documentElement);
     return {
-        text: cs.getPropertyValue('--text-secondary').trim() || '#94a3b8',
-        strong: cs.getPropertyValue('--text-primary').trim() || '#f8fafc',
-        grid: cs.getPropertyValue('--tint-2').trim() || 'rgba(148,163,184,0.15)',
-        surface: cs.getPropertyValue('--bg-secondary').trim() || '#131a2e',
-        success: cs.getPropertyValue('--color-success').trim() || '#10b981',
-        danger: cs.getPropertyValue('--color-danger').trim() || '#f43f5e'
+        text: cs.getPropertyValue('--text-secondary').trim() || '#DCCDB8',
+        strong: cs.getPropertyValue('--text-primary').trim() || '#F5EFE4',
+        grid: cs.getPropertyValue('--tint-2').trim() || 'rgba(245,239,228,0.07)',
+        surface: cs.getPropertyValue('--bg-secondary').trim() || '#4F3D29',
+        success: cs.getPropertyValue('--color-success').trim() || '#4CC38A',
+        danger: cs.getPropertyValue('--color-danger').trim() || '#F59A88'
     };
 }
 
@@ -844,7 +844,7 @@ function renderCharts() {
                         align: 'start',
                         labels: {
                             color: ct.strong,
-                            font: { family: 'Outfit', size: 12 },
+                            font: { family: 'Source Sans 3', size: 12 },
                             usePointStyle: true,
                             boxWidth: 8,
                             padding: 8,
@@ -970,13 +970,13 @@ function renderCharts() {
                 scales: {
                     x: {
                         grid: { display: false },
-                        ticks: { color: ct.text, font: { family: 'Outfit', size: 11 } }
+                        ticks: { color: ct.text, font: { family: 'Source Sans 3', size: 11 } }
                     },
                     y: {
                         grid: { color: ct.grid },
                         ticks: {
                             color: ct.text,
-                            font: { family: 'Outfit', size: 11 },
+                            font: { family: 'Source Sans 3', size: 11 },
                             callback: (v) => '₦' + (v >= 1000 ? Math.round(v / 1000) + 'k' : v)
                         }
                     }
@@ -986,7 +986,7 @@ function renderCharts() {
                         position: 'top',
                         labels: {
                             color: ct.strong,
-                            font: { family: 'Outfit', size: 12 },
+                            font: { family: 'Source Sans 3', size: 12 },
                             usePointStyle: true,
                             padding: 14
                         }

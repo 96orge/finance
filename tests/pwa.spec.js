@@ -30,7 +30,7 @@ test('works offline — fonts, icons and charts included — after a single onli
         await document.fonts.ready;
         const loaded = (family, weight) => [...document.fonts].some((face) =>
             face.family.replace(/["']/g, '') === family && face.status === 'loaded' && (!weight || face.weight === weight));
-        return { text: loaded('Outfit'), icons: loaded('Font Awesome 6 Free', '900'), charts: typeof Chart === 'function' };
+        return { text: loaded('Source Sans 3'), headings: loaded('Poppins'), icons: loaded('Font Awesome 6 Free', '900'), charts: typeof Chart === 'function' };
     });
-    expect(assets).toEqual({ text: true, icons: true, charts: true });
+    expect(assets).toEqual({ text: true, headings: true, icons: true, charts: true });
 });
