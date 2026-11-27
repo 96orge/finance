@@ -6,9 +6,10 @@ Steady hosts its third-party files here rather than loading them from CDNs. The 
 |---|---|---|---|---|
 | [Chart.js](https://www.chartjs.org) | 4.5.1 | `chart.js/chart.umd.min.js` | npm `chart.js@4.5.1` (`dist/chart.umd.min.js`) | MIT, `chart.js/LICENSE.md` |
 | [Font Awesome Free](https://fontawesome.com) | 6.4.0 | `fontawesome/css/all.min.css`, `fontawesome/webfonts/*.woff2` | npm `@fortawesome/fontawesome-free@6.4.0` | Icons CC BY 4.0, fonts SIL OFL 1.1, code MIT, `fontawesome/LICENSE.txt` |
-| [Outfit](https://fonts.google.com/specimen/Outfit) | Google Fonts v15, variable, weights 300–800 | `outfit/*.woff2`, `outfit/outfit.css` | Google Fonts | SIL OFL 1.1, `outfit/OFL.txt` |
+| [Poppins](https://fonts.google.com/specimen/Poppins) | Google Fonts v24, static weights 500–800, latin + latin-ext | `poppins/*.woff2`, `poppins/poppins.css` | Google Fonts | SIL OFL 1.1, `poppins/OFL.txt` |
+| [Source Sans 3](https://fonts.google.com/specimen/Source+Sans+3) | Google Fonts v20, variable, weights 200–900, latin + latin-ext | `source-sans-3/*.woff2`, `source-sans-3/source-sans-3.css` | Google Fonts | SIL OFL 1.1, `source-sans-3/OFL.txt` |
 
-All files are unmodified copies, except `outfit/outfit.css`, which mirrors the stylesheet Google Fonts serves but points at the local font files. A few files from the original packages are deliberately left out:
+All files are unmodified copies, except `poppins/poppins.css` and `source-sans-3/source-sans-3.css`, which mirror the stylesheets Google Fonts serves but points at the local font files. A few files from the original packages are deliberately left out:
 
 - **Font Awesome's `.ttf` fallbacks.** Its CSS lists `.woff2` first, and every browser that can run Steady supports woff2.
 - **Chart.js's source map** (~1MB). Browsers only request it while DevTools is open.

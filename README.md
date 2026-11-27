@@ -58,8 +58,8 @@ and it can be installed to your phone's home screen and used offline.
 ## Tech
 
 - Vanilla HTML, CSS and JavaScript — no framework, no build step.
-- [Chart.js](https://www.chartjs.org/) for the charts, Font Awesome for icons and the Outfit
-  font — all hosted in [`vendor/`](vendor/README.md), so nothing loads from other servers.
+- [Chart.js](https://www.chartjs.org/) for the charts, Font Awesome for icons and the Poppins
+  and Source Sans 3 fonts — all hosted in [`vendor/`](vendor/README.md), so nothing loads from other servers.
 - [Playwright](https://playwright.dev) end-to-end tests, run on every pull request.
 
 ## Running locally

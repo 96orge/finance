@@ -1,55 +1,70 @@
 /* Design Tokens and Theme Variables
    ---------------------------------------------------------------------------
-   :root holds the DARK palette (the app's default identity). Light overrides
-   come from the OS preference (when no explicit choice is stamped) and from
-   an explicit data-theme on <html>. Every colour is a semantic token so both
-   themes stay in sync. */
+   Brand palette (see CLAUDE.md for the full guide):
+     Cream    #F5EFE4  main background
+     Sand     #EDE3D3  cards and panels on cream
+     Espresso #3D2914  darkest text, dark backgrounds
+     Brown    #4F3D29  headings and body text
+     Saddle   #6B4226  primary accent: buttons, links, the top bar
+     Rust     #A0612F  highlight words, active states
+     Tan      #B08968  borders, dividers, icons and decoration
+
+   :root holds the DARK palette (Espresso surfaces). Light — the cream brand
+   palette — comes from the OS preference (when no explicit choice is stamped)
+   and from an explicit data-theme on <html>. Every colour is a semantic token
+   so both themes stay in sync; components never use raw hex values.
+   Where a brand colour is too light/dark for small text on a surface, the
+   *-ink token is a contrast-safe shade of it (>=4.5:1). */
 :root {
     /* Surfaces & text (dark) */
-    --bg-primary: #0b0f19;
-    --bg-secondary: #131a2e;
-    --bg-glass: rgba(19, 26, 46, 0.65);
-    --border-glass: rgba(255, 255, 255, 0.09);
-    --border-glass-hover: rgba(255, 255, 255, 0.16);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --bg-primary: #3D2914;               /* Espresso */
+    --bg-secondary: #4F3D29;             /* Brown, cards on Espresso */
+    --bg-glass: rgba(79, 61, 41, 0.72);
+    --border-glass: rgba(237, 227, 211, 0.12);
+    --border-glass-hover: rgba(237, 227, 211, 0.22);
+    --glass-shadow: 0 8px 32px 0 rgba(20, 12, 4, 0.45);
     --glass-blur: blur(16px);
 
-    --text-primary: #f8fafc;
-    --text-secondary: #a4b1c4;   /* >=4.5:1 on --bg-primary */
-    --text-muted: #8b98ab;       /* >=4.5:1 on --bg-primary */
+    --text-primary: #F5EFE4;             /* Cream */
+    --text-secondary: #DCCDB8;           /* >=4.5:1 on --bg-secondary */
+    --text-muted: #C9B49A;               /* >=4.5:1 on --bg-secondary */
 
     /* Neutral tints layered over the background (theme-flipped for light) */
-    --tint-1: rgba(255, 255, 255, 0.03);
-    --tint-2: rgba(255, 255, 255, 0.06);
-    --tint-3: rgba(255, 255, 255, 0.11);
-    --scrim: rgba(3, 6, 12, 0.66);
+    --tint-1: rgba(245, 239, 228, 0.04);
+    --tint-2: rgba(245, 239, 228, 0.07);
+    --tint-3: rgba(245, 239, 228, 0.12);
+    --scrim: rgba(20, 12, 4, 0.70);
 
-    /* Brand — gold primary + indigo complement.
-       Gold FILLS always take dark text (--on-primary); use --*-ink for a
-       gold/indigo used as text or a small icon so contrast holds. */
-    --color-primary: #e0a92e;
-    --color-primary-hover: #f0bd4b;
-    --color-primary-ink: #ecc463;
-    --color-primary-glow: rgba(224, 169, 46, 0.30);
-    --on-primary: #2b2000;
-    --on-accent: #ffffff;
+    /* Brand — primary (Saddle family) + accent (Rust family).
+       Fills take --on-primary / --on-accent; use --*-ink for the colour as
+       text or a small icon so contrast holds. */
+    --color-primary: #C8A27C;            /* light Tan: Saddle reads too dark on Espresso */
+    --color-primary-hover: #D6B490;
+    --color-primary-ink: #D4A373;
+    --color-primary-glow: rgba(200, 162, 124, 0.26);
+    --on-primary: #3D2914;
+    --on-accent: #3D2914;
 
-    --color-accent: #7c8bff;
-    --color-accent-ink: #9aa6ff;
-    --color-accent-glow: rgba(124, 139, 255, 0.26);
+    --color-accent: #D08A52;             /* lifted Rust */
+    --color-accent-ink: #E0A070;
+    --color-accent-glow: rgba(208, 138, 82, 0.24);
 
-    --color-success: #10b981;
-    --color-success-hover: #059669;
-    --color-success-glow: rgba(16, 185, 129, 0.2);
+    --color-decor: #B08968;              /* Tan: dividers, decorative icons */
+    --topbar-bg: #6B4226;                /* Saddle */
+    --on-topbar: #F5EFE4;
 
-    --color-danger: #f43f5e;
-    --color-danger-hover: #e11d48;
-    --color-danger-glow: rgba(244, 63, 94, 0.2);
+    --color-success: #4CC38A;
+    --color-success-hover: #3AAE77;
+    --color-success-glow: rgba(76, 195, 138, 0.2);
 
-    --color-warning: #f59e0b;
-    --color-warning-hover: #d97706;
+    --color-danger: #F59A88;
+    --color-danger-hover: #F2846F;
+    --color-danger-glow: rgba(245, 154, 136, 0.2);
 
-    --focus-ring: #9aa6ff;       /* >=3:1 vs both themes' surfaces */
+    --color-warning: #E8B04B;
+    --color-warning-hover: #D99B2E;
+
+    --focus-ring: #E0A070;               /* >=3:1 vs both themes' surfaces */
 
     /* Type scale */
     --text-xs: 0.75rem;
@@ -74,7 +89,9 @@
     --space-16: 64px;
     --space-20: 80px;
 
-    --font-main: 'Outfit', sans-serif;
+    /* Brand fonts: Poppins for headings, Source Sans 3 for body text */
+    --font-heading: 'Poppins', 'Source Sans 3', system-ui, sans-serif;
+    --font-main: 'Source Sans 3', system-ui, sans-serif;
     --sidebar-width: 260px;
     --transition-fast: 0.2s ease;
     --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -85,57 +102,84 @@
     color-scheme: dark;
 }
 
-/* Light palette — applied when the OS prefers light (and the user hasn't forced
-   dark), or when the user explicitly chooses light. */
+/* Light palette (the cream brand palette) — applied when the OS prefers light
+   (and the user hasn't forced dark), or when the user explicitly chooses light.
+   Keep the two blocks below identical. */
 @media (prefers-color-scheme: light) {
     :root:not([data-theme="dark"]) {
-        --bg-primary: #f4f6fb;
-        --bg-secondary: #ffffff;
-        --bg-glass: rgba(255, 255, 255, 0.78);
-        --border-glass: rgba(15, 23, 42, 0.12);
-        --border-glass-hover: rgba(15, 23, 42, 0.22);
-        --glass-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
-        --text-primary: #17233b;
-        --text-secondary: #46566e;
-        --text-muted: #5b6a7d;
-        --tint-1: rgba(15, 23, 42, 0.035);
-        --tint-2: rgba(15, 23, 42, 0.06);
-        --tint-3: rgba(15, 23, 42, 0.11);
-        --scrim: rgba(15, 23, 42, 0.45);
-        --color-primary: #c98f16;
-        --color-primary-hover: #b47d0c;
-        --color-primary-ink: #7a5c0e;
-        --color-primary-glow: rgba(201, 143, 22, 0.20);
-        --color-accent: #4a57cf;
-        --color-accent-ink: #3b45b3;
-        --color-accent-glow: rgba(74, 87, 207, 0.18);
-        --focus-ring: #4a57cf;
+        --bg-primary: #F5EFE4;           /* Cream */
+        --bg-secondary: #EDE3D3;         /* Sand */
+        --bg-glass: rgba(237, 227, 211, 0.82);
+        --border-glass: rgba(176, 137, 104, 0.35);       /* Tan */
+        --border-glass-hover: rgba(176, 137, 104, 0.6);
+        --glass-shadow: 0 8px 24px rgba(61, 41, 20, 0.10);
+        --text-primary: #4F3D29;         /* Brown */
+        --text-secondary: #634F3A;
+        --text-muted: #74604B;           /* >=4.5:1 on Sand */
+        --tint-1: rgba(79, 61, 41, 0.04);
+        --tint-2: rgba(79, 61, 41, 0.07);
+        --tint-3: rgba(79, 61, 41, 0.12);
+        --scrim: rgba(61, 41, 20, 0.45);
+        --color-primary: #6B4226;        /* Saddle */
+        --color-primary-hover: #5A3720;
+        --color-primary-ink: #6B4226;
+        --color-primary-glow: rgba(107, 66, 38, 0.18);
+        --on-primary: #F5EFE4;
+        --color-accent: #A0612F;         /* Rust */
+        --color-accent-ink: #8A5226;     /* Rust darkened to >=4.5:1 on Sand */
+        --color-accent-glow: rgba(160, 97, 47, 0.18);
+        --on-accent: #FFFFFF;
+        --color-decor: #B08968;          /* Tan */
+        --topbar-bg: #6B4226;            /* Saddle */
+        --on-topbar: #F5EFE4;
+        --color-success: #276B43;
+        --color-success-hover: #1F5836;
+        --color-success-glow: rgba(39, 107, 67, 0.18);
+        --color-danger: #B3362B;
+        --color-danger-hover: #962B22;
+        --color-danger-glow: rgba(179, 54, 43, 0.18);
+        --color-warning: #8F5A0C;
+        --color-warning-hover: #7A4C09;
+        --focus-ring: #A0612F;
         color-scheme: light;
     }
 }
 
 :root[data-theme="light"] {
-    --bg-primary: #f4f6fb;
-    --bg-secondary: #ffffff;
-    --bg-glass: rgba(255, 255, 255, 0.78);
-    --border-glass: rgba(15, 23, 42, 0.12);
-    --border-glass-hover: rgba(15, 23, 42, 0.22);
-    --glass-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
-    --text-primary: #17233b;
-    --text-secondary: #46566e;
-    --text-muted: #5b6a7d;
-    --tint-1: rgba(15, 23, 42, 0.035);
-    --tint-2: rgba(15, 23, 42, 0.06);
-    --tint-3: rgba(15, 23, 42, 0.11);
-    --scrim: rgba(15, 23, 42, 0.45);
-    --color-primary: #c98f16;
-    --color-primary-hover: #b47d0c;
-    --color-primary-ink: #7a5c0e;
-    --color-primary-glow: rgba(201, 143, 22, 0.20);
-    --color-accent: #4a57cf;
-    --color-accent-ink: #3b45b3;
-    --color-accent-glow: rgba(74, 87, 207, 0.18);
-    --focus-ring: #4a57cf;
+    --bg-primary: #F5EFE4;           /* Cream */
+    --bg-secondary: #EDE3D3;         /* Sand */
+    --bg-glass: rgba(237, 227, 211, 0.82);
+    --border-glass: rgba(176, 137, 104, 0.35);       /* Tan */
+    --border-glass-hover: rgba(176, 137, 104, 0.6);
+    --glass-shadow: 0 8px 24px rgba(61, 41, 20, 0.10);
+    --text-primary: #4F3D29;         /* Brown */
+    --text-secondary: #634F3A;
+    --text-muted: #74604B;           /* >=4.5:1 on Sand */
+    --tint-1: rgba(79, 61, 41, 0.04);
+    --tint-2: rgba(79, 61, 41, 0.07);
+    --tint-3: rgba(79, 61, 41, 0.12);
+    --scrim: rgba(61, 41, 20, 0.45);
+    --color-primary: #6B4226;        /* Saddle */
+    --color-primary-hover: #5A3720;
+    --color-primary-ink: #6B4226;
+    --color-primary-glow: rgba(107, 66, 38, 0.18);
+    --on-primary: #F5EFE4;
+    --color-accent: #A0612F;         /* Rust */
+    --color-accent-ink: #8A5226;     /* Rust darkened to >=4.5:1 on Sand */
+    --color-accent-glow: rgba(160, 97, 47, 0.18);
+    --on-accent: #FFFFFF;
+    --color-decor: #B08968;          /* Tan */
+    --topbar-bg: #6B4226;            /* Saddle */
+    --on-topbar: #F5EFE4;
+    --color-success: #276B43;
+    --color-success-hover: #1F5836;
+    --color-success-glow: rgba(39, 107, 67, 0.18);
+    --color-danger: #B3362B;
+    --color-danger-hover: #962B22;
+    --color-danger-glow: rgba(179, 54, 43, 0.18);
+    --color-warning: #8F5A0C;
+    --color-warning-hover: #7A4C09;
+    --focus-ring: #A0612F;
     color-scheme: light;
 }
 
@@ -170,6 +214,13 @@ body {
 }
 
 html { overflow-x: clip; }
+
+/* Brand type: Poppins for headings and the wordmark, Source Sans 3 for everything else. */
+h1, h2, h3, h4, h5, h6,
+.sidebar-brand span,
+.mobile-brand span {
+    font-family: var(--font-heading);
+}
 
 /* Background Glowing Accents — fixed so they never widen the scroll area. */
 body::before, body::after {
@@ -245,7 +296,7 @@ body::before {
 body::after {
     bottom: -10%;
     right: -10%;
-    background-color: var(--color-success);
+    background-color: var(--color-accent);
 }
 
 /* App Container Layout */
@@ -261,14 +312,14 @@ body::after {
     justify-content: space-between;
     align-items: center;
     padding: 0.85rem 1.25rem;
-    background: var(--bg-glass);
-    backdrop-filter: var(--glass-blur);
+    background: var(--topbar-bg);
+    color: var(--on-topbar);
     border-bottom: 1px solid var(--border-glass);
     position: sticky;
     top: 0;
     width: 100%;
     z-index: 100;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 20px rgba(61, 41, 20, 0.18);
 }
 
 .mobile-brand {
@@ -280,12 +331,12 @@ body::after {
 .logo-icon-sm {
     width: 30px;
     height: 30px;
-    background: var(--color-primary);
+    background: var(--on-topbar);
     border-radius: var(--border-radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--on-primary);
+    color: var(--topbar-bg);
     font-size: 0.95rem;
 }
 
@@ -293,7 +344,7 @@ body::after {
     font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: -0.5px;
-    color: var(--color-primary-ink);
+    color: var(--on-topbar);
 }
 
 .mobile-menu-btn {
@@ -304,7 +355,7 @@ body::after {
     height: 36px;
     background: transparent;
     border: none;
-    color: var(--text-primary);
+    color: var(--on-topbar);
     font-size: 1.15rem;
     cursor: pointer;
 }
@@ -314,7 +365,7 @@ body::after {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--scrim);
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--transition-normal);
@@ -370,13 +421,13 @@ body::after {
 .mobile-avatar {
     width: 32px;
     height: 32px;
-    background: var(--tint-2);
-    border: 1px solid var(--border-glass);
+    background: rgba(245, 239, 228, 0.14);
+    border: 1px solid rgba(245, 239, 228, 0.28);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-secondary);
+    color: var(--on-topbar);
     font-size: 0.85rem;
 }
 
@@ -464,13 +515,13 @@ body::after {
 
 .nav-btn.active {
     color: var(--text-primary);
-    background: var(--color-primary-glow);
-    border: 1px solid var(--color-primary);
-    box-shadow: inset 0 0 12px var(--color-primary-glow);
+    background: var(--color-accent-glow);
+    border: 1px solid var(--color-accent);
+    box-shadow: inset 0 0 12px var(--color-accent-glow);
 }
 
 .nav-btn.active i {
-    color: var(--color-primary-ink);
+    color: var(--color-accent-ink);
     transform: scale(1.1);
 }
 
@@ -1115,13 +1166,13 @@ textarea:focus {
 .btn-text {
     background: transparent;
     border: none;
-    color: var(--color-accent-ink);
+    color: var(--color-primary-ink);
     padding: 0;
     cursor: pointer;
 }
 
 .btn-text:hover {
-    color: var(--color-accent);
+    color: var(--color-accent-ink);
     text-decoration: underline;
 }
 
@@ -1164,7 +1215,7 @@ textarea:focus {
     padding: 2.25rem;
     transform: scale(0.95) translateY(20px);
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 25px 50px -12px rgba(20, 12, 4, 0.7);
 }
 
 .modal-overlay.active .modal-content {
@@ -1265,14 +1316,14 @@ textarea:focus {
 }
 
 .badge-expense {
-    background: rgba(244, 63, 94, 0.1);
-    border-color: rgba(244, 63, 94, 0.2);
+    background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-danger) 20%, transparent);
     color: var(--color-danger);
 }
 
 .badge-income {
-    background: rgba(16, 185, 129, 0.1);
-    border-color: rgba(16, 185, 129, 0.2);
+    background: color-mix(in srgb, var(--color-success) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-success) 20%, transparent);
     color: var(--color-success);
 }
 
@@ -1645,8 +1696,8 @@ h3 + .section-desc { margin-top: 0; }
 
 .btn-card-action-delete:hover {
     color: var(--color-danger);
-    background: rgba(244, 63, 94, 0.1);
-    border-color: rgba(244, 63, 94, 0.2);
+    background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-danger) 20%, transparent);
 }
 
 .card-divider {
@@ -1811,7 +1862,7 @@ h3 + .section-desc { margin-top: 0; }
     padding: 1rem 1.25rem;
     border-radius: var(--border-radius-sm);
     color: var(--text-primary);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 10px 25px rgba(20, 12, 4, 0.5);
     display: flex;
     align-items: center;
     gap: var(--space-3);
@@ -1877,7 +1928,7 @@ h3 + .section-desc { margin-top: 0; }
     grid-template-columns: repeat(4, 1fr);
     padding: 0.5rem 0.25rem;
     z-index: 99;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 30px rgba(20, 12, 4, 0.4);
 }
 
 .mobile-nav-btn {
@@ -2009,7 +2060,7 @@ h3 + .section-desc { margin-top: 0; }
         border-bottom: none;
         border-left: none;
         border-right: none;
-        box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+        box-shadow: 0 -10px 40px rgba(20, 12, 4, 0.5);
     }
 
     .modal-overlay.active .modal-content {
@@ -2137,7 +2188,7 @@ h3 + .section-desc { margin-top: 0; }
     font-weight: 600;
 }
 
-.pill-due { background: rgba(244, 63, 94, 0.15); color: var(--color-danger); }
+.pill-due { background: color-mix(in srgb, var(--color-danger) 15%, transparent); color: var(--color-danger); }
 .pill-muted { background: var(--tint-2); color: var(--text-muted); }
 
 /* --- Priority (Need / Want) tags --- */
@@ -2152,7 +2203,7 @@ h3 + .section-desc { margin-top: 0; }
 }
 
 .priority-pill.priority-want {
-    background: rgba(245, 158, 11, 0.16);
+    background: color-mix(in srgb, var(--color-warning) 16%, transparent);
     color: var(--color-warning);
 }
 
@@ -2169,8 +2220,8 @@ h3 + .section-desc { margin-top: 0; }
     transition: var(--transition-fast);
 }
 
-.priority-toggle.priority-need { color: var(--color-success); border-color: rgba(16, 185, 129, 0.4); }
-.priority-toggle.priority-want { color: var(--color-warning); border-color: rgba(245, 158, 11, 0.4); }
+.priority-toggle.priority-need { color: var(--color-success); border-color: color-mix(in srgb, var(--color-success) 40%, transparent); }
+.priority-toggle.priority-want { color: var(--color-warning); border-color: color-mix(in srgb, var(--color-warning) 40%, transparent); }
 .priority-toggle:hover { border-color: var(--border-glass-hover); }
 
 /* --- Quick-add tiles --- */
