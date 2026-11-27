@@ -1,42 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { openApp, goToTab, trackPageErrors, RICH_STATE, EMPTY_STATE } from './helpers.js';
+import { CORS, json, mock, claudeMessage, claudeStream, storedState } from './mocks.js';
 
 // Every online service is mocked: tests never reach the real internet or spend API credit.
-
-const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*' };
-
-function json(route, body, status = 200) {
-    return route.fulfill({ status, headers: { ...CORS, 'content-type': 'application/json' }, body: JSON.stringify(body) });
-}
-
-// Answer CORS preflights, hand everything else to `handler`.
-async function mock(page, pattern, handler) {
-    await page.route(pattern, (route) => route.request().method() === 'OPTIONS'
-        ? route.fulfill({ status: 204, headers: CORS })
-        : handler(route));
-}
-
-function claudeMessage(text) {
-    return {
-        id: 'msg_test', type: 'message', role: 'assistant', model: 'claude-opus-5-5',
-        content: [{ type: 'text', text }], stop_reason: 'end_turn', stop_sequence: null,
-        usage: { input_tokens: 10, output_tokens: 10 }
-    };
-}
-
-function claudeStream(text) {
-    const events = [
-        ['message_start', { type: 'message_start', message: { ...claudeMessage(''), content: [], stop_reason: null } }],
-        ['content_block_start', { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } }],
-        ['content_block_delta', { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text } }],
-        ['content_block_stop', { type: 'content_block_stop', index: 0 }],
-        ['message_delta', { type: 'message_delta', delta: { stop_reason: 'end_turn', stop_sequence: null }, usage: { output_tokens: 10 } }],
-        ['message_stop', { type: 'message_stop' }],
-    ];
-    return events.map(([name, data]) => `event: ${name}\ndata: ${JSON.stringify(data)}\n\n`).join('');
-}
-
-const storedState = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('96orge_budget_state')));
 
 test('the ₦/$ rate updates itself when you hold US stocks', async ({ page }) => {
     await mock(page, 'https://open.er-api.com/**', (route) => json(route, { result: 'success', rates: { NGN: 1612.345 } }));

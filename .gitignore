@@ -19,3 +19,6 @@ node_modules/
 # Python bytecode (ui-ux-pro-max skill)
 __pycache__/
 *.pyc
+
+# Scratch tests written while debugging
+tests/_scratch_*

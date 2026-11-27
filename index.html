@@ -781,6 +781,9 @@
                                 </button>
                             </div>
                         </form>
+                        <!-- SLOT: statement import (online-statements.js). Markup for importing a bank statement goes here. -->
+                        <div id="statement-import" class="statement-import"></div>
+                        <!-- END SLOT: statement import -->
                         <div id="smart-add-results" class="smart-add-results" aria-live="polite"></div>
                     </div>
 
@@ -1016,6 +1019,9 @@
                                 </div>
                             </form>
                         </div>
+
+                        <!-- SLOT: reminders (online-reminders.js). A fourth .online-feature block for reminder notifications goes here. -->
+                        <!-- END SLOT: reminders -->
                     </div>
                 </div>
 
@@ -1840,6 +1846,9 @@
             </div>
             <form id="review-form">
                 <div id="review-body"></div>
+                <!-- SLOT: AI monthly review (online-review.js). Claude's written review of the month goes here. -->
+                <div id="review-ai" class="review-ai"></div>
+                <!-- END SLOT: AI monthly review -->
                 <div class="form-group">
                     <label for="review-note">Your reflection</label>
                     <textarea id="review-note" rows="4" placeholder="What went well? What will you change next month?"></textarea>
@@ -1857,5 +1866,8 @@
 
     <script src="app.js"></script>
     <script src="online.js"></script>
+    <script src="online-statements.js"></script>
+    <script src="online-review.js"></script>
+    <script src="online-reminders.js"></script>
 </body>
 </html>

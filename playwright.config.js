@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 4173;
+// PORT=4180 npx playwright test runs the suite on another port (e.g. two checkouts at once).
+const PORT = Number(process.env.PORT) || 4173;
 
 export default defineConfig({
     testDir: './tests',
@@ -24,6 +25,7 @@ export default defineConfig({
     ],
     webServer: {
         command: 'node scripts/serve.mjs',
+        env: { PORT: String(PORT) },
         url: `http://127.0.0.1:${PORT}`,
         reuseExistingServer: !process.env.CI,
     },

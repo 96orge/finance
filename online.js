@@ -63,8 +63,10 @@
     const baseSaveData = saveData;
     let syncTimer = null;
     let booted = false; // app.js saves once while starting up; that isn't a user change
+    const saveListeners = []; // see steadyOnline.onSaved below
     saveData = function () {
         baseSaveData();
+        saveListeners.forEach(fn => { try { fn(); } catch (e) { console.warn('A save listener failed:', e); } });
         if (booted && syncReady() && conn.sync.auto && !applyingRemote) {
             conn.sync.dirty = true;
             saveConn();
@@ -1073,6 +1075,29 @@
         checkRemoteOnStartup();
     });
 
-    // Exposed for tests and debugging.
-    window.steadyOnline = { financeSnapshot, refreshFx, backupNow, encryptState, decryptPayload };
+    // Shared with the feature files that load after this one (online-statements.js,
+    // online-review.js, online-reminders.js) and with the tests.
+    window.steadyOnline = {
+        // Device-local online settings (keys, preferences). Never part of `state`.
+        get conn() { return conn; },
+        saveConn,
+        DEFAULT_MODEL,
+        aiReady,
+        isBooted: () => booted,
+        // Run `fn` after every saveData() (including app.js's save while starting up).
+        onSaved(fn) { saveListeners.push(fn); },
+        // Claude: the vendored SDK client, base request params (model + refusal
+        // fallbacks), and a readable message for any error from a Claude call.
+        getClient,
+        baseParams,
+        friendlyAiError,
+        // Formatting: safe HTML for Claude's replies, rounded naira, "3 h ago".
+        formatReply,
+        money,
+        timeAgo,
+        // Open Data & Backup and focus a field there.
+        goToSetting,
+        // Tests and debugging.
+        financeSnapshot, refreshFx, backupNow, encryptState, decryptPayload
+    };
 })();
