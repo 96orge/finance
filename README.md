@@ -40,13 +40,27 @@ be installed to your phone's home screen and used offline. Optional online featu
   rate, debt, streak), a money tip of the day, and a curated library of books and
   principles on money habits, wealth building, business and income.
 - **Monthly Review** — an end-of-month summary (income, spend by category vs prior month,
-  budget adherence, needs/wants, biggest leak) plus a saved reflection note.
+  budget adherence, needs/wants, biggest leak) plus a saved reflection note. With the
+  assistant on, **Claude writes up the month** (what went well, where the money went, and
+  three measurable actions for next month), following up on last month's reflection. The
+  write-up is saved with the review and flagged if your numbers change afterwards.
 - **Categories & Budgets** — custom categories (colour + icon), need/want tags, monthly
   spending limits, and a monthly "wants" cap with safe / warning / danger alerts.
 - **Assistant (Claude)** — *optional, needs your own Anthropic API key.* **Smart add**
   turns a typed note, a pasted bank alert (SMS or email) or a receipt photo into draft
   transactions you check before saving. **Ask about your money** answers questions using a
   summary of your own accounts, spending, budgets, debts, goals and investments.
+- **Bank statement import** — *part of Smart add.* Import a PDF or CSV statement (GTBank,
+  Access, Kuda, OPay and the rest; Excel users can save as CSV). CSVs are parsed on your
+  device so amounts stay exact, and Claude only names and categorises the rows; PDFs are
+  read by Claude. You review every row before anything is saved: possible duplicates and
+  transfers between your own accounts start unticked, and the statement's opening and
+  closing balances are checked against the rows.
+- **Reminder notifications** — *optional, per device.* Notifications for bills coming due
+  and loans that are overdue, at the time you choose, with or without amounts (they can
+  show on a lock screen). Worked out and shown entirely on your device. In the background
+  on Android and desktop Chrome/Edge once Steady is installed; on iPhone only while Steady
+  is open.
 - **Live prices** — the ₦/$ rate updates itself when you hold US stocks; US stock prices
   refresh from Finnhub (free key); NGX prices are looked up by Claude with web search, and
   implausible jumps are skipped.
@@ -75,8 +89,8 @@ be installed to your phone's home screen and used offline. Optional online featu
   and Source Sans 3 fonts, and the [Anthropic SDK](https://github.com/anthropics/anthropic-sdk-typescript)
   for the assistant — all hosted in [`vendor/`](vendor/README.md), so the app's own files
   never load from other servers.
-- The online features live in `online.js`; with none set up, it makes no requests (apart
-  from the public ₦/$ rate when you hold US stocks).
+- The online features live in `online.js` and the `online-*.js` feature files; with none
+  set up, they make no requests (apart from the public ₦/$ rate when you hold US stocks).
 - [Playwright](https://playwright.dev) end-to-end tests, run on every pull request.
 
 ## Running locally
@@ -115,6 +129,9 @@ Steady only sends data when you use an online feature, and each one says what it
 | ₦/$ rate | ExchangeRate-API | Nothing about you (a plain request for public rates), only when you hold US stocks |
 | US stock prices | Finnhub | Your US tickers and your Finnhub key |
 | Assistant | Anthropic | What you type or photograph; for questions, a summary of your finances |
+| Statement import | Anthropic | A PDF statement in full; for a CSV, only each row's date, amount and description |
+| Monthly review | Anthropic | That month's numbers, and last month's reflection and write-up |
+| Reminders | Nothing is sent | Worked out and shown on your device |
 | NGX prices | Anthropic | Your NGX tickers and company names |
 | Cloud backup | GitHub (secret Gist) | Your data, encrypted on your device; GitHub can't read it |
 
