@@ -3270,6 +3270,119 @@ summary.debt-group-title::-webkit-details-marker { display: none; }
 /* ==========================================================================
    AI monthly review (online-review.js)
    ========================================================================== */
+.review-ai-body:empty { display: none; }
+.review-ai-body {
+    margin: var(--space-5) 0 var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border-glass);
+}
+.review-ai-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+    font-size: 0.9rem;
+}
+.review-ai-title i,
+.review-ai-setup > i { color: var(--color-accent-ink); }
+
+/* No key yet: one quiet line, like the callouts above it */
+.review-ai-setup {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: var(--space-2);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.review-ai-notice {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--border-radius-sm);
+    background: var(--tint-2);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+.review-ai-notice i { color: var(--color-decor); }
+
+/* The write-up: a highlighted panel (Rust edge = highlight, per the brand guide) */
+.review-ai-text {
+    padding: var(--space-4);
+    border: 1px solid var(--border-glass);
+    border-left: 3px solid var(--color-accent);
+    border-radius: var(--border-radius-sm);
+    background: var(--tint-1);
+    color: var(--text-primary);
+    font-size: 0.92rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+.review-ai-text > p:first-child:not(.review-ai-typing) { font-weight: 600; }
+.review-ai-text p + p,
+.review-ai-text p + ul,
+.review-ai-text ul + p,
+.review-ai-text ul + ul { margin-top: var(--space-2); }
+.review-ai-text ul { padding-left: 1.2rem; }
+.review-ai-text li + li { margin-top: var(--space-1); }
+.review-ai-heading {
+    margin: var(--space-4) 0 var(--space-1);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+.review-ai-text > .review-ai-heading:first-child { margin-top: 0; }
+.review-ai-typing { color: var(--text-muted); font-style: italic; }
+
+.review-ai-actions,
+.review-ai-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-5);
+}
+.review-ai-text + .review-ai-actions,
+.review-ai-foot { margin-top: var(--space-2); }
+.review-ai-foot {
+    column-gap: var(--space-4);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+.review-ai-stale { color: var(--color-warning); }
+.review-ai-stale i { margin-right: var(--space-1); }
+
+/* Text buttons get a finger-sized hit area without looking any bigger */
+.review-ai-body .btn-text {
+    min-height: 44px;
+    font-size: 0.85rem;
+}
+.review-ai-body .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.review-ai-body .btn-outline:disabled:hover {
+    background: transparent;
+    border-color: var(--border-glass);
+}
+
+.review-ai-fine {
+    margin-top: var(--space-2);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+}
+.review-ai-actions + .review-ai-fine { margin-top: var(--space-3); }
+
+/* A long write-up makes the review taller than a phone screen: scroll inside it */
+#review-modal .modal-content {
+    max-height: calc(100dvh - var(--space-8));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+@media (max-width: 600px) {
+    #review-modal .modal-content { max-height: calc(100dvh - var(--space-4)); }
+}
 
 /* END: AI monthly review */
 
